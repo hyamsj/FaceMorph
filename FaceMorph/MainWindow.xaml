@@ -5,8 +5,51 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FaceMorph"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="FaceMorph" Height="450" Width="800">
+
     <Grid>
-        <Button Click="Button_Click"></Button>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.ColumnSpan="4">
+            <Menu DockPanel.Dock="Top" >
+                <MenuItem Header="_File">
+                    <MenuItem Header="_New" />
+                    <MenuItem Header="_Add Folder" Click="FileAddFolder_Click" />
+                    <MenuItem Header="_Add Image" Click="FileAddImage_Click" />
+                    <MenuItem Header="_Save" />
+                    <Separator />
+                    <MenuItem Header="_Exit" />
+                </MenuItem>
+                <MenuItem Header="_Edit">
+                    <MenuItem Header="_Undo" />
+                    <MenuItem Header="_Redo" />
+                    <MenuItem Header="_Add More Pictures" Click="AddMorePictures_Click"/>
+                    <MenuItem Header="_Delete Selected" />
+                    <MenuItem Header="_Enable Rearrange" IsCheckable="True" IsChecked="True"/>
+                </MenuItem>
+                <MenuItem Header="_View">
+                    <MenuItem Header="_Preview" />
+                </MenuItem>
+            </Menu>
+        </DockPanel>
+        <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="4">
+            <WrapPanel x:Name="imagePreview">
+                
+            </WrapPanel>
+            
+        </ScrollViewer>
+
     </Grid>
 </Window>
