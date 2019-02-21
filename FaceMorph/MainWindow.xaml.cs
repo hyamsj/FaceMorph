@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace FaceMorph
 {
@@ -23,16 +24,29 @@ namespace FaceMorph
     public partial class MainWindow : Window
     {
         public const int IMAGE_WIDTH = 200;
-        List<Image> images = new List<Image>();
-        
+
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// TODO: This is just a test for now
+        /// </summary>
         private void FileAddFolder_Click(object sender, RoutedEventArgs e)
         {
-            // TODO FolderBrowserDialog
+            var filePath = "";
+            System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
+            folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+
+            if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                filePath = folderBrowserDialog.SelectedPath;
+            }
+            Console.WriteLine(filePath);
+
+
         }
 
         private void FileAddImage_Click(object sender, RoutedEventArgs e)
@@ -51,24 +65,26 @@ namespace FaceMorph
             ImageSource imageSource = new BitmapImage(new Uri(filePath));
             image.Source = imageSource;
             image.Width = IMAGE_WIDTH;
-            image.Margin = new Thickness(10,10,10,10);
+            image.Margin = new Thickness(10, 10, 10, 10);
             image.MouseUp += ImageClicked;
             //image.MouseDown
 
-            
-            images.Add(image);
+
+            //images.Add(image);
             imagePreview.Children.Add(image);
         }
 
         private void AddMorePictures_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("Add more pictures clicked");                
+            Console.WriteLine("Add more pictures clicked");
         }
 
         // Probably doesn't belong in this class
         private void ImageClicked(object sender, MouseButtonEventArgs e)
         {
-            Console.WriteLine("Image was clicked");
+            Image im = (Image)sender;
+            
+            Console.WriteLine($"Width: {im.Source.Width} Height: {im.Source.Height} Source: {im.Source}");
         }
     }
 }
