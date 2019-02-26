@@ -46,8 +46,11 @@
         </DockPanel>
         <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="4">
             <WrapPanel x:Name="imagePreview">
+                <!--<Border BorderThickness="10px" BorderBrush="Green">
+                    <Image Source="C:\Users\joni\Pictures\Thesis Images\DSC00021.JPG" MaxWidth="150"></Image>
+                </Border>-->
             </WrapPanel>
-            
+
         </ScrollViewer>
 
     </Grid>

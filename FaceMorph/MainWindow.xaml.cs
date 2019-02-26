@@ -32,7 +32,7 @@ namespace FaceMorph
         }
 
         /// <summary>
-        /// TODO: This is just a test for now
+        /// Adds content of a Folder (Multiple Images)
         /// </summary>
         private void FileAddFolder_Click(object sender, RoutedEventArgs e)
         {
@@ -50,12 +50,13 @@ namespace FaceMorph
             foreach (string f in files)
             {
                 AddImageHelper(f);
-                Console.WriteLine(f);
-
             }
 
         }
 
+        /// <summary>
+        /// Adds single Image to screen
+        /// </summary>
         private void FileAddImage_Click(object sender, RoutedEventArgs e)
         {
             var filePath = "";
@@ -73,31 +74,53 @@ namespace FaceMorph
 
         }
 
+        /// <summary>
+        /// Dockpanel Add more pictures
+        /// </summary>
         private void AddMorePictures_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("Add more pictures clicked");
         }
 
-        // Probably doesn't belong in this class
+        /// <summary>
+        /// Image Click Event handler
+        /// </summary>
         private void ImageClicked(object sender, MouseButtonEventArgs e)
         {
             Image im = (Image)sender;
-            Console.WriteLine($"Number of images in list: {images.Count}");
-            Console.WriteLine($"Width: {im.Source.Width} Height: {im.Source.Height} Source: {im.Source}");
+
+            if (im.Parent is Border)
+            {
+                Border b = im.Parent as Border;
+                b.BorderBrush = Brushes.Red;
+                
+                //imagePreview.Children.Remove(b);
+            }
+
+            //Console.WriteLine($"Number of images in list: {images.Count}");
+            //Console.WriteLine($"Width: {im.Source.Width} Height: {im.Source.Height} Source: {im.Source}");
 
         }
 
         private void AddImageHelper(string filePath)
         {
+            Border border = new Border();
             Image image = new Image();
             ImageSource imageSource = new BitmapImage(new Uri(filePath));
             image.Source = imageSource;
             image.Width = IMAGE_WIDTH;
-            image.Margin = new Thickness(10, 10, 10, 10);
+            //image.Margin = new Thickness(10, 10, 10, 10);
             image.MouseUp += ImageClicked;
-            images.Add(new ImageDetails { Title = image.Name, ImageData = new BitmapImage(new Uri(filePath)), ImageElement = image });
-
-            imagePreview.Children.Add(images.Last().ImageElement);
+            images.Add(new ImageDetails {
+                Title = image.Name,
+                ImageData = new BitmapImage(new Uri(filePath)),
+                ImageElement = image,
+                ImageBorder = border
+            });
+            border.BorderThickness = new Thickness(1);
+            border.Margin = new Thickness(10,10,10,10);
+            border.Child = images.Last().ImageElement;
+            imagePreview.Children.Add(border);
         }
 
 

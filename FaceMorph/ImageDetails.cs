@@ -13,6 +13,7 @@ namespace FaceMorph
         private string _Title;
         private BitmapImage _ImageData;
         private Image _ImageElement;
+        private Border _ImageBorder;
         private bool _isSelected = false;
 
         public ImageDetails()
@@ -42,6 +43,12 @@ namespace FaceMorph
         {
             get { return _isSelected; }
             set { _isSelected = value; }
+        }
+
+        public Border ImageBorder
+        {
+            get { return _ImageBorder; }
+            set { _ImageBorder = value; }
         }
 
 
