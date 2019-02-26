@@ -24,7 +24,7 @@ namespace FaceMorph
     public partial class MainWindow : Window
     {
         public const int IMAGE_WIDTH = 200;
-
+        private List<ImageDetails> images = new List<ImageDetails>();
 
         public MainWindow()
         {
@@ -44,8 +44,15 @@ namespace FaceMorph
             {
                 filePath = folderBrowserDialog.SelectedPath;
             }
-            Console.WriteLine(filePath);
 
+            string[] files = Directory.GetFiles(folderBrowserDialog.SelectedPath);
+
+            foreach (string f in files)
+            {
+                AddImageHelper(f);
+                Console.WriteLine(f);
+
+            }
 
         }
 
@@ -61,17 +68,9 @@ namespace FaceMorph
             {
                 filePath = openFileDialog.FileName;
             }
-            Image image = new Image();
-            ImageSource imageSource = new BitmapImage(new Uri(filePath));
-            image.Source = imageSource;
-            image.Width = IMAGE_WIDTH;
-            image.Margin = new Thickness(10, 10, 10, 10);
-            image.MouseUp += ImageClicked;
-            //image.MouseDown
 
+            AddImageHelper(filePath);
 
-            //images.Add(image);
-            imagePreview.Children.Add(image);
         }
 
         private void AddMorePictures_Click(object sender, RoutedEventArgs e)
@@ -83,8 +82,24 @@ namespace FaceMorph
         private void ImageClicked(object sender, MouseButtonEventArgs e)
         {
             Image im = (Image)sender;
-            
+            Console.WriteLine($"Number of images in list: {images.Count}");
             Console.WriteLine($"Width: {im.Source.Width} Height: {im.Source.Height} Source: {im.Source}");
+
         }
+
+        private void AddImageHelper(string filePath)
+        {
+            Image image = new Image();
+            ImageSource imageSource = new BitmapImage(new Uri(filePath));
+            image.Source = imageSource;
+            image.Width = IMAGE_WIDTH;
+            image.Margin = new Thickness(10, 10, 10, 10);
+            image.MouseUp += ImageClicked;
+            images.Add(new ImageDetails { Title = image.Name, ImageData = new BitmapImage(new Uri(filePath)), ImageElement = image });
+
+            imagePreview.Children.Add(images.Last().ImageElement);
+        }
+
+
     }
 }

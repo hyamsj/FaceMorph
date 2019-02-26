@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="FaceMorph" Height="450" Width="800">
 
-    <Grid>
+    <Grid x:Name="myGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition />
@@ -46,7 +46,6 @@
         </DockPanel>
         <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="4">
             <WrapPanel x:Name="imagePreview">
-                
             </WrapPanel>
             
         </ScrollViewer>

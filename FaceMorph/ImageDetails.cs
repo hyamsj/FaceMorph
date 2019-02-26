@@ -4,31 +4,50 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 
 namespace FaceMorph
 {
-    class ImageDetails : Image {
+    class ImageDetails {
+
+        private string _Title;
+        private BitmapImage _ImageData;
+        private Image _ImageElement;
+        private bool _isSelected = false;
 
         public ImageDetails()
         {
             Console.WriteLine("An image was added");
         }
 
-        public string Name { get; set; }
+        public string Title
+        {
+            get { return this._Title; }
+            set { this._Title = value; }
+        }
 
-        public string Description { get; set; }
+        public BitmapImage ImageData
+        {
+            get { return this._ImageData; }
+            set { this._ImageData = value; }
+        }
 
-        public string Path { get; set; }
+        public Image ImageElement
+        {
+            get { return this._ImageElement; }
+            set { this._ImageElement = value; }
+        }
 
-        public string FileName { get; set; }
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set { _isSelected = value; }
+        }
 
-        public string Extension { get; set; }
 
-        public int Height { get; set; }
 
-        public int Width { get; set; }
 
-        public long Size { get; set; }
+
 
     }
 }
