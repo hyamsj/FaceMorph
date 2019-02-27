@@ -44,14 +44,20 @@
                 </MenuItem>
             </Menu>
         </DockPanel>
-        <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="4">
+        <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3">
             <WrapPanel x:Name="imagePreview">
-                <!--<Border BorderThickness="10px" BorderBrush="Green">
-                    <Image Source="C:\Users\joni\Pictures\Thesis Images\DSC00021.JPG" MaxWidth="150"></Image>
-                </Border>-->
             </WrapPanel>
-
         </ScrollViewer>
+        <StackPanel Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="10">
+                <RadioButton GroupName="MOD" Content="Move" Click="RadioButtonMove_Click"/>
+                <RadioButton GroupName="MOD" Content="Delete" Click="RadioButtonDelete_Click"/>
+            </StackPanel >
+            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="LeftButton_Click"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="r" Width="50" Height="50" Click="RemoveButton_Click"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="RightButton_Click"/>
+
+        </StackPanel>
 
     </Grid>
 </Window>

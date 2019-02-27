@@ -8,13 +8,16 @@ using System.Windows.Media.Imaging;
 
 namespace FaceMorph
 {
-    class ImageDetails {
+    public class ImageDetails {
 
         private string _Title;
         private BitmapImage _ImageData;
         private Image _ImageElement;
         private Border _ImageBorder;
         private bool _isSelected = false;
+        private bool _toDelete = false;
+
+
 
         public ImageDetails()
         {
@@ -49,6 +52,12 @@ namespace FaceMorph
         {
             get { return _ImageBorder; }
             set { _ImageBorder = value; }
+        }
+
+        public bool ToDelete
+        {
+            get { return _toDelete; }
+            set { _toDelete = value; }
         }
 
 

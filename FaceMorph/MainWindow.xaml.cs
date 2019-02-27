@@ -51,6 +51,7 @@ namespace FaceMorph
             {
                 AddImageHelper(f);
             }
+            // TODO error handling when string is empty
 
         }
 
@@ -71,6 +72,7 @@ namespace FaceMorph
             }
 
             AddImageHelper(filePath);
+            // TODO error handling when string is empty
 
         }
 
@@ -123,6 +125,29 @@ namespace FaceMorph
             imagePreview.Children.Add(border);
         }
 
+        private void LeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("left button clicked");
+        }
 
+        private void RemoveButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Remove button clicked");
+        }
+
+        private void RightButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Right button clicked");
+        }
+
+        private void RadioButtonMove_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("RadioButton move clicked");
+        }
+
+        private void RadioButtonDelete_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("RadioButton delete clicked");
+        }
     }
 }
