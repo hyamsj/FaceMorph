@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:FaceMorph"
         mc:Ignorable="d"
         Title="FaceMorph" Height="450" Width="800">
-
+   
     <Grid x:Name="myGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -44,14 +44,29 @@
                 </MenuItem>
             </Menu>
         </DockPanel>
-        <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3">
-            <WrapPanel x:Name="imagePreview">
-            </WrapPanel>
-        </ScrollViewer>
+
+        <ListView Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3" x:Name="imagePreview">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="2" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <WrapPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        
+                        <Image Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" Width="200" PreviewMouseDown="ImageClicked"/>
+                        
+                        <TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
+                    </WrapPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        
         <StackPanel Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
             <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="10">
-                <RadioButton GroupName="MOD" Content="Move" Click="RadioButtonMove_Click"/>
-                <RadioButton GroupName="MOD" Content="Delete" Click="RadioButtonDelete_Click"/>
+                <RadioButton x:Name="RBMove" GroupName="MOD" Content="Move" Click="RadioButtonMove_Click" IsChecked="True"/>
+                <RadioButton x:Name="RBDelete" GroupName="MOD" Content="Delete" Click="RadioButtonDelete_Click"/>
             </StackPanel >
             <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="LeftButton_Click"/>
             <Button FontFamily="Marlett" FontSize="20" Content="r" Width="50" Height="50" Click="RemoveButton_Click"/>
@@ -60,4 +75,5 @@
         </StackPanel>
 
     </Grid>
+
 </Window>
