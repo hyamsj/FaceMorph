@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaceMorph", "FaceMorph\Face
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaceMorphTest", "FaceMorphTest\FaceMorphTest.csproj", "{36A95D6C-8E05-4ED8-89A4-B336E75179FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BindingTest", "BindingTest\BindingTest.csproj", "{D5BBE336-3B80-4F4A-9CD3-5463EA5605E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{36A95D6C-8E05-4ED8-89A4-B336E75179FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36A95D6C-8E05-4ED8-89A4-B336E75179FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36A95D6C-8E05-4ED8-89A4-B336E75179FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5BBE336-3B80-4F4A-9CD3-5463EA5605E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5BBE336-3B80-4F4A-9CD3-5463EA5605E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5BBE336-3B80-4F4A-9CD3-5463EA5605E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5BBE336-3B80-4F4A-9CD3-5463EA5605E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

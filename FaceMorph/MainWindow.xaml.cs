@@ -1,13 +1,17 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 
 namespace FaceMorph
 {
@@ -17,13 +21,18 @@ namespace FaceMorph
     public partial class MainWindow : Window
     {
         public const int IMAGE_WIDTH = 200;
-        private List<ImageDetails> images = new List<ImageDetails>();
-
+        
+        //private List<ImageDetails> images = new List<ImageDetails>();
+        public ObservableCollection<ImageDetails> images = new ObservableCollection<ImageDetails>();
+        private System.Windows.Forms.BindingSource imagesBindingSource = new System.Windows.Forms.BindingSource();
 
         public MainWindow()
         {
             InitializeComponent();
+
         }
+
+
 
         /// <summary>
         /// Adds content of a Folder (Multiple Images)
@@ -39,6 +48,8 @@ namespace FaceMorph
                 filePath = folderBrowserDialog.SelectedPath;
             }
             Console.WriteLine(filePath);
+            
+            // 
             if (filePath != "")
             {
                 string[] files = Directory.GetFiles(folderBrowserDialog.SelectedPath);
@@ -49,7 +60,6 @@ namespace FaceMorph
                 }
             }
 
-            // TODO error handling when string is empty
 
         }
 
@@ -74,8 +84,6 @@ namespace FaceMorph
                 AddImageHelper(filePath);
             }
 
-            // TODO error handling when string is empty
-
         }
 
         /// <summary>
@@ -90,35 +98,30 @@ namespace FaceMorph
         /// Image Click Event handler
         /// </summary>
         private void ImageClicked(object sender, MouseButtonEventArgs e)
-        {
+        {            
             bool? rbDelete = RBDelete.IsChecked;
             bool? rbMove = RBMove.IsChecked;
-            //WrapPanel panel = (WrapPanel)sender;
+
             Image im = (Image)sender;
-            Border b = im.Parent as Border;
-            b.BorderBrush = Brushes.Red;
-            //if (im.Parent is Border)
-            //{
-            //    if ((bool)rbDelete)
-            //    {
-            //        //imagePreview.Children.
-            //        Border b = im.Parent as Border;
-            //        b.BorderBrush = Brushes.Red;
-            //        Console.WriteLine("Delete rbutton active");
-            //    }
+            int currentImageId = Int32.Parse(im.Uid);
+            
+            if (im.Parent is StackPanel)
+            {
+                Console.WriteLine($"{im.Uid}");
 
-            //    if ((bool)rbMove)
-            //    {
-            //        Border b = im.Parent as Border;
-            //        b.BorderBrush = Brushes.Green;
-            //        Console.WriteLine("Move rbutton active");
-            //    }
-            //    //    //imagePreview.Children.Remove(b);
-            //}
+                if ((bool)rbDelete)
+                {   
+                    ImageDetails curr = images.Where(x => x.Id == currentImageId).FirstOrDefault();
+                    curr.ToDelete = true;
+                    curr.BorderColor = "Red";
+                }
 
-            //Console.WriteLine($"Number of images in list: {images.Count}");
-            //Console.WriteLine($"Width: {im.Source.Width} Height: {im.Source.Height} Source: {im.Source}");
-
+                if ((bool)rbMove)
+                {
+                    ImageDetails curr = images.Where(x => x.Id == currentImageId).FirstOrDefault();
+                    curr.BorderColor = "Green";
+                }
+            }
         }
 
         private void AddImageHelper(string filePath)
@@ -130,18 +133,11 @@ namespace FaceMorph
             image.Width = IMAGE_WIDTH;
             image.Margin = new Thickness(10, 10, 10, 10);
             image.MouseUp += ImageClicked;
-            //images.Add(new ImageDetails {
-            //    Title = image.Name,
-            //    ImageData = new BitmapImage(new Uri(filePath)),
-            //    ImageElement = image,
-            //    ImageBorder = border
-            //});
-            //border.BorderThickness = new Thickness(1);
-            //border.Margin = new Thickness(10, 10, 10, 10);
-            //border.Child = images.Last().ImageElement;
-            //imagePreview.Children.Add(border);
+                        
             border.BorderThickness = new Thickness(1);
             border.Margin = new Thickness(10, 10, 10, 10);
+
+            var count = images.Count;
 
             images.Add(
 
@@ -150,30 +146,37 @@ namespace FaceMorph
                     Title = filePath,
                     ImageData = new BitmapImage(new Uri(filePath)),
                     ImageElement = image,
-                    ImageBorder = border
-
+                    BorderColor = "", 
+                    Id = count
                 });
 
+            this.imagesBindingSource.DataSource = images;
+            //imagePreview.ItemsSource = null;
+            imagePreview.ItemsSource = imagesBindingSource;
+            imagePreview.Items.Refresh();
 
-            imagePreview.ItemsSource = null;
-            imagePreview.ItemsSource = images;
             Console.WriteLine($"Image Name {Title}");
             Console.WriteLine($"Total items in list {images.Count}");
 
         }
 
         private void LeftButton_Click(object sender, RoutedEventArgs e)
-        {
+        {            
             Console.WriteLine("left button clicked");
         }
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            ImageDetails first = images[0];
-            first.ImageBorder = new Border();
-            first.ImageBorder.BorderThickness = new Thickness(1);
-            first.ImageBorder.BorderBrush = Brushes.Red;
 
+            foreach (var x in images.ToList())
+            {
+                if (x.ToDelete)
+                {
+                    images.Remove(x);
+                    imagePreview.Items.Refresh();
+
+                }
+            }
             Console.WriteLine("Remove button clicked");
         }
 
@@ -200,9 +203,15 @@ namespace FaceMorph
             // where to move
         }
 
-        public void RemoveImages()
+        public void LoadProgramWithImages()
         {
 
         }
+
+
+
+
+
+
     }
 }

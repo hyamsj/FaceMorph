@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -8,14 +10,18 @@ using System.Windows.Media.Imaging;
 
 namespace FaceMorph
 {
-    public class ImageDetails {
+    public class ImageDetails : INotifyPropertyChanged
+    {
 
         private string _Title;
         private BitmapImage _ImageData;
         private Image _ImageElement;
-        private Border _ImageBorder;
+        private string _BorderColor;
         private bool _isSelected = false;
         private bool _toDelete = false;
+        private int _id = 0;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
 
 
@@ -27,7 +33,7 @@ namespace FaceMorph
         public string Title
         {
             get { return this._Title; }
-            set { this._Title = value; }
+            set { this._Title = value; NotifyPropertyChanged(); }
         }
 
         public BitmapImage ImageData
@@ -48,10 +54,10 @@ namespace FaceMorph
             set { _isSelected = value; }
         }
 
-        public Border ImageBorder
+        public string BorderColor
         {
-            get { return _ImageBorder; }
-            set { _ImageBorder = value; }
+            get { return _BorderColor; }
+            set { _BorderColor = value; NotifyPropertyChanged(); }
         }
 
         public bool ToDelete
@@ -60,8 +66,17 @@ namespace FaceMorph
             set { _toDelete = value; }
         }
 
+        public int Id
+        {
+            get { return _id; }
+            set { _id = value; }
+        }
 
 
+        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
 
 

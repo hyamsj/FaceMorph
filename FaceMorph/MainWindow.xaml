@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:FaceMorph"
         mc:Ignorable="d"
         Title="FaceMorph" Height="450" Width="800">
-   
+
     <Grid x:Name="myGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -45,7 +45,7 @@
             </Menu>
         </DockPanel>
 
-        <ListView Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3" x:Name="imagePreview">
+        <ListView x:Name="imagePreview" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <UniformGrid Columns="2" />
@@ -53,16 +53,19 @@
             </ItemsControl.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <WrapPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                        
-                        <Image Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" Width="200" PreviewMouseDown="ImageClicked"/>
-                        
-                        <TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
+                    <WrapPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" x:Name="displayedImages">
+
+                        <Border BorderBrush="{Binding BorderColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" Width="200">
+                            <StackPanel>
+                                <Image Uid="{Binding Id}" Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" Width="200" PreviewMouseDown="ImageClicked"/>
+                                <TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"/>
+                            </StackPanel>
+                        </Border>
                     </WrapPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        
+
         <StackPanel Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
             <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="10">
                 <RadioButton x:Name="RBMove" GroupName="MOD" Content="Move" Click="RadioButtonMove_Click" IsChecked="True"/>
