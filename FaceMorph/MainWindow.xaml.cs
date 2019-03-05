@@ -21,10 +21,12 @@ namespace FaceMorph
     public partial class MainWindow : Window
     {
         public const int IMAGE_WIDTH = 200;
-        
-        //private List<ImageDetails> images = new List<ImageDetails>();
         public ObservableCollection<ImageDetails> images = new ObservableCollection<ImageDetails>();
         private System.Windows.Forms.BindingSource imagesBindingSource = new System.Windows.Forms.BindingSource();
+        private int _currentImage = 0;
+        private int _previousImage = 0;
+        private static int _imagesCounter = 0;
+
 
         public MainWindow()
         {
@@ -48,7 +50,7 @@ namespace FaceMorph
                 filePath = folderBrowserDialog.SelectedPath;
             }
             Console.WriteLine(filePath);
-            
+
             // 
             if (filePath != "")
             {
@@ -95,35 +97,45 @@ namespace FaceMorph
         }
 
         /// <summary>
-        /// Image Click Event handler
+        /// Image Click Event handler. 
         /// </summary>
         private void ImageClicked(object sender, MouseButtonEventArgs e)
-        {            
+        {
             bool? rbDelete = RBDelete.IsChecked;
             bool? rbMove = RBMove.IsChecked;
 
             Image im = (Image)sender;
-            int currentImageId = Int32.Parse(im.Uid);
-            
+            _previousImage = _currentImage;
+            _currentImage = Int32.Parse(im.Uid);
+
+            ImageDetails curr = images.Where(x => x.Id == _currentImage).FirstOrDefault();
+
+            Console.WriteLine($"Current Image Method: {GetCurrentImage().Id}");
+
             if (im.Parent is StackPanel)
             {
-                Console.WriteLine($"{im.Uid}");
+                Console.WriteLine($"User Id: {im.Uid}");
 
                 if ((bool)rbDelete)
-                {   
-                    ImageDetails curr = images.Where(x => x.Id == currentImageId).FirstOrDefault();
-                    curr.ToDelete = true;
-                    curr.BorderColor = "Red";
-                }
-
-                if ((bool)rbMove)
                 {
-                    ImageDetails curr = images.Where(x => x.Id == currentImageId).FirstOrDefault();
-                    curr.BorderColor = "Green";
+
+                    if (curr.ToDelete == false)
+                    {
+                        curr.ToDelete = true;
+                        curr.BorderColor = "Red";
+                    }
+                    else
+                    {
+                        curr.ToDelete = false;
+                        curr.BorderColor = "Transparent";
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Adds Image to image List
+        /// </summary>
         private void AddImageHelper(string filePath)
         {
             Border border = new Border();
@@ -131,13 +143,11 @@ namespace FaceMorph
             ImageSource imageSource = new BitmapImage(new Uri(filePath));
             image.Source = imageSource;
             image.Width = IMAGE_WIDTH;
-            image.Margin = new Thickness(10, 10, 10, 10);
+            //image.Margin = new Thickness(10, 10, 10, 10);
             image.MouseUp += ImageClicked;
-                        
+
             border.BorderThickness = new Thickness(1);
             border.Margin = new Thickness(10, 10, 10, 10);
-
-            var count = images.Count;
 
             images.Add(
 
@@ -146,28 +156,22 @@ namespace FaceMorph
                     Title = filePath,
                     ImageData = new BitmapImage(new Uri(filePath)),
                     ImageElement = image,
-                    BorderColor = "", 
-                    Id = count
+                    BorderColor = "",
+                    Id = _imagesCounter
                 });
-
+            _imagesCounter++;
             this.imagesBindingSource.DataSource = images;
             //imagePreview.ItemsSource = null;
             imagePreview.ItemsSource = imagesBindingSource;
-            imagePreview.Items.Refresh();
+            imagePreview.Items.Refresh(); // todo: add to listener
 
             Console.WriteLine($"Image Name {Title}");
             Console.WriteLine($"Total items in list {images.Count}");
 
         }
 
-        private void LeftButton_Click(object sender, RoutedEventArgs e)
-        {            
-            Console.WriteLine("left button clicked");
-        }
-
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-
             foreach (var x in images.ToList())
             {
                 if (x.ToDelete)
@@ -177,11 +181,49 @@ namespace FaceMorph
 
                 }
             }
-            Console.WriteLine("Remove button clicked");
+            CleanUpIndex(); // todo: add to listener
+        }
+
+        private void CmRemove_Click(object sender, RoutedEventArgs e)
+        {
+            ImageDetails img = GetCurrentImage();
+            images.Remove(img);
+            imagePreview.Items.Refresh();
+            CleanUpIndex(); // todo: add to listener
+        }
+
+        private void LeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            bool? rbMove = RBMove.IsChecked;
+            if ((bool)rbMove)
+            {
+                int currentImage = GetCurrentImage().Id;
+                int nextImage = currentImage - 1;
+
+                images = ObservableCollectionExtension.Swap(images, currentImage, nextImage);
+                CleanUpIndex(); // todo: add listener
+                imagePreview.Items.Refresh(); // todo: add to listener
+                _currentImage--;
+            }
         }
 
         private void RightButton_Click(object sender, RoutedEventArgs e)
         {
+            bool? rbMove = RBMove.IsChecked;
+            if ((bool)rbMove)
+            {
+                int currentImage = GetCurrentImage().Id;
+                int nextImage = currentImage + 1;
+
+                images = ObservableCollectionExtension.Swap(images, currentImage, nextImage);
+                CleanUpIndex(); // todo: add listener
+                imagePreview.Items.Refresh(); // todo: add to listener
+                _currentImage++;
+            }
+
+            
+
+
             Console.WriteLine("Right button clicked");
         }
 
@@ -196,19 +238,46 @@ namespace FaceMorph
 
         }
 
-        public void RearrangeImages()
-        {
-            // what is selected
-            // status move
-            // where to move
-        }
+
 
         public void LoadProgramWithImages()
         {
 
         }
 
+        public ImageDetails GetCurrentImage()
+        {
+            foreach (ImageDetails im in images)
+            {
+                if (im.Id == _currentImage)
+                    return im;
+            }
+            return images.ElementAt(0);
+        }
 
+        public ImageDetails GetNextImage()
+        {
+            ImageDetails curr = GetCurrentImage();
+            int i = curr.Id;
+            if (i+1 <= images.Count)
+                return images.ElementAt(i+1);
+
+            return curr;
+        }
+
+        public void CleanUpIndex()
+        {
+            for (int i = 0; i < images.Count; i++)
+            {
+                images.ElementAt(i).Id = i;
+            }
+            _imagesCounter = images.Count;
+        }
+
+        public static int NumOfImages
+        {
+            get { return _imagesCounter; }
+        }
 
 
 

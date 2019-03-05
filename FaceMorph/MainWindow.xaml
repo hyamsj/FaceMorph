@@ -53,12 +53,19 @@
             </ItemsControl.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <WrapPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" x:Name="displayedImages">
-
+                    <WrapPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <Border BorderBrush="{Binding BorderColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" Width="200">
                             <StackPanel>
+                            <StackPanel.ContextMenu>
+                                <ContextMenu>
+                                        <MenuItem Header="Move Right" Click="RightButton_Click"/>
+                                        <MenuItem Header="Move Left" Click="LeftButton_Click"/>
+                                    <Separator />
+                                        <MenuItem Header="Remove" Click="CmRemove_Click" x:Name="cm"/>
+                                </ContextMenu>
+                            </StackPanel.ContextMenu>
                                 <Image Uid="{Binding Id}" Source="{Binding ImageData}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" Width="200" PreviewMouseDown="ImageClicked"/>
-                                <TextBlock Text="{Binding Title}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"/>
+                                <TextBlock Text="{Binding Id}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"/>
                             </StackPanel>
                         </Border>
                     </WrapPanel>

@@ -13,13 +13,14 @@ namespace FaceMorph
     public class ImageDetails : INotifyPropertyChanged
     {
 
-        private string _Title;
-        private BitmapImage _ImageData;
-        private Image _ImageElement;
-        private string _BorderColor;
+        private string _title;
+        private BitmapImage _imageData;
+        private Image _imageElement;
+        private string _borderColor;
         private bool _isSelected = false;
         private bool _toDelete = false;
         private int _id = 0;
+        
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -28,24 +29,25 @@ namespace FaceMorph
         public ImageDetails()
         {
             Console.WriteLine("An image was added");
+            
         }
 
         public string Title
         {
-            get { return this._Title; }
-            set { this._Title = value; NotifyPropertyChanged(); }
+            get { return this._title; }
+            set { this._title = value; NotifyPropertyChanged(); }
         }
 
         public BitmapImage ImageData
         {
-            get { return this._ImageData; }
-            set { this._ImageData = value; }
+            get { return this._imageData; }
+            set { this._imageData = value; }
         }
 
         public Image ImageElement
         {
-            get { return this._ImageElement; }
-            set { this._ImageElement = value; }
+            get { return this._imageElement; }
+            set { this._imageElement = value; }
         }
 
         public bool IsSelected
@@ -56,8 +58,8 @@ namespace FaceMorph
 
         public string BorderColor
         {
-            get { return _BorderColor; }
-            set { _BorderColor = value; NotifyPropertyChanged(); }
+            get { return _borderColor; }
+            set { _borderColor = value; NotifyPropertyChanged(); }
         }
 
         public bool ToDelete
@@ -71,6 +73,8 @@ namespace FaceMorph
             get { return _id; }
             set { _id = value; }
         }
+
+
 
 
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
