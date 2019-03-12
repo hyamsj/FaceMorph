@@ -14,22 +14,18 @@ namespace FaceMorph
     {
 
         private string _title;
-        private BitmapImage _imageData;
+        private BitmapSource _imageData; // was BitmapImage
         private Image _imageElement;
         private string _borderColor;
         private bool _isSelected = false;
         private bool _toDelete = false;
-        private int _id = 0;
-        
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-
 
         public ImageDetails()
         {
             Console.WriteLine("An image was added");
-            
+
         }
 
         public string Title
@@ -38,8 +34,22 @@ namespace FaceMorph
             set { this._title = value; NotifyPropertyChanged(); }
         }
 
-        public BitmapImage ImageData
+        public BitmapSource ImageData
         {
+            //get
+            //{
+            //    BitmapSource source = this._imageData as BitmapSource;
+            //    if (source != null)
+            //        this._imageData = source;
+            //    return this._imageData;
+            //}
+            //set
+            //{
+            //    Console.WriteLine("Do i get reached?");
+            //    BitmapSource source = value as BitmapSource;
+            //    if (source != null)
+            //        this._imageData = source;
+            //}
             get { return this._imageData; }
             set { this._imageData = value; }
         }
@@ -62,17 +72,10 @@ namespace FaceMorph
             set { _borderColor = value; NotifyPropertyChanged(); }
         }
 
-        public bool ToDelete
-        {
-            get { return _toDelete; }
-            set { _toDelete = value; }
-        }
+        public bool ToDelete { get; set; }
 
-        public int Id
-        {
-            get { return _id; }
-            set { _id = value; }
-        }
+
+        public int Id { get; set; } = 0;
 
 
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 
 
 namespace FaceMorph
@@ -26,11 +28,15 @@ namespace FaceMorph
         private int _currentImage = 0;
         private int _previousImage = 0;
         private static int _imagesCounter = 0;
+        private string json;
+        public bool loadDataAtStartUp = true;
 
 
         public MainWindow()
         {
             InitializeComponent();
+            if (loadDataAtStartUp)
+                LoadImageHelper();
 
         }
 
@@ -138,16 +144,11 @@ namespace FaceMorph
         /// </summary>
         private void AddImageHelper(string filePath)
         {
-            Border border = new Border();
+
             Image image = new Image();
             ImageSource imageSource = new BitmapImage(new Uri(filePath));
             image.Source = imageSource;
-            image.Width = IMAGE_WIDTH;
-            //image.Margin = new Thickness(10, 10, 10, 10);
             image.MouseUp += ImageClicked;
-
-            border.BorderThickness = new Thickness(1);
-            border.Margin = new Thickness(10, 10, 10, 10);
 
             images.Add(
 
@@ -160,14 +161,24 @@ namespace FaceMorph
                     Id = _imagesCounter
                 });
             _imagesCounter++;
-            this.imagesBindingSource.DataSource = images;
-            //imagePreview.ItemsSource = null;
+            imagesBindingSource.DataSource = images;
             imagePreview.ItemsSource = imagesBindingSource;
             imagePreview.Items.Refresh(); // todo: add to listener
+        }
 
-            Console.WriteLine($"Image Name {Title}");
-            Console.WriteLine($"Total items in list {images.Count}");
+        public void LoadImageHelper()
+        {
+            images.Clear();
+            List<TmpImageDetails> tmpList = new List<TmpImageDetails>();
 
+            using (StreamReader r = new StreamReader(@"images.json"))
+            {
+                string json = r.ReadToEnd();
+                tmpList = JsonConvert.DeserializeObject<List<TmpImageDetails>>(json);
+            }
+
+            tmpList.ForEach(x => AddImageHelper(x.Title));
+            imagePreview.Items.Refresh();
         }
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
@@ -221,7 +232,7 @@ namespace FaceMorph
                 _currentImage++;
             }
 
-            
+
 
 
             Console.WriteLine("Right button clicked");
@@ -238,12 +249,29 @@ namespace FaceMorph
 
         }
 
-
-
-        public void LoadProgramWithImages()
+        private void SaveProject_Click(object sender, RoutedEventArgs e)
         {
+            List<TmpImageDetails> tmpList = new List<TmpImageDetails>();
+            foreach (ImageDetails imgd in images)
+            {
+                tmpList.Add(
+                    new TmpImageDetails
+                    {
+                        Title = imgd.Title,
+                        //Id = imgd.Id
+                    });
+            }
+            json = JsonConvert.SerializeObject(images); // change to tmpList
+            File.WriteAllText(@"images.json", json);
 
         }
+
+        private void LoadProject_Click(object sender, RoutedEventArgs e)
+        {
+            LoadImageHelper();
+        }
+
+
 
         public ImageDetails GetCurrentImage()
         {
@@ -259,8 +287,8 @@ namespace FaceMorph
         {
             ImageDetails curr = GetCurrentImage();
             int i = curr.Id;
-            if (i+1 <= images.Count)
-                return images.ElementAt(i+1);
+            if (i + 1 <= images.Count)
+                return images.ElementAt(i + 1);
 
             return curr;
         }
@@ -279,7 +307,15 @@ namespace FaceMorph
             get { return _imagesCounter; }
         }
 
+        public ObservableCollection<ImageDetails> GetImages()
+        {
+            return images;
+        }
 
+        private void ImagePreview_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
 
 
     }

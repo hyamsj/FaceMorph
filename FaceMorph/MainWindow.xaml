@@ -28,7 +28,8 @@
                     <MenuItem Header="_New" />
                     <MenuItem Header="_Add Folder" Click="FileAddFolder_Click" />
                     <MenuItem Header="_Add Image" Click="FileAddImage_Click" />
-                    <MenuItem Header="_Save" />
+                    <MenuItem Header="_Save" Click="SaveProject_Click"/>
+                    <MenuItem Header="_Load Existing Project" Click="LoadProject_Click"/>
                     <Separator />
                     <MenuItem Header="_Exit" />
                 </MenuItem>
@@ -45,7 +46,7 @@
             </Menu>
         </DockPanel>
 
-        <ListView x:Name="imagePreview" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3">
+        <ListView x:Name="imagePreview" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3" SelectionChanged="ImagePreview_SelectionChanged">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <UniformGrid Columns="2" />
@@ -53,7 +54,7 @@
             </ItemsControl.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <WrapPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <WrapPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <Border BorderBrush="{Binding BorderColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" Width="200">
                             <StackPanel>
                             <StackPanel.ContextMenu>

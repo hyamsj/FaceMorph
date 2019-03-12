@@ -15,7 +15,7 @@ namespace FaceMorphTest
                 Title = "",
                 ImageData = null,
                 ImageElement = null,
-                ImageBorder = null
+                
             };
 
         }
