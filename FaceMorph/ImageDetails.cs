@@ -36,20 +36,6 @@ namespace FaceMorph
 
         public BitmapSource ImageData
         {
-            //get
-            //{
-            //    BitmapSource source = this._imageData as BitmapSource;
-            //    if (source != null)
-            //        this._imageData = source;
-            //    return this._imageData;
-            //}
-            //set
-            //{
-            //    Console.WriteLine("Do i get reached?");
-            //    BitmapSource source = value as BitmapSource;
-            //    if (source != null)
-            //        this._imageData = source;
-            //}
             get { return this._imageData; }
             set { this._imageData = value; }
         }

@@ -28,6 +28,7 @@ namespace FaceMorph
         private int _currentImage = 0;
         private int _previousImage = 0;
         private static int _imagesCounter = 0;
+        public const string JSON_FILE = @"images.json";
         private string json;
         public bool loadDataAtStartUp = true;
 
@@ -57,7 +58,7 @@ namespace FaceMorph
             }
             Console.WriteLine(filePath);
 
-            // 
+
             if (filePath != "")
             {
                 string[] files = Directory.GetFiles(folderBrowserDialog.SelectedPath);
@@ -168,17 +169,21 @@ namespace FaceMorph
 
         public void LoadImageHelper()
         {
-            images.Clear();
-            List<TmpImageDetails> tmpList = new List<TmpImageDetails>();
 
-            using (StreamReader r = new StreamReader(@"images.json"))
+            if (File.Exists(JSON_FILE))
             {
-                string json = r.ReadToEnd();
-                tmpList = JsonConvert.DeserializeObject<List<TmpImageDetails>>(json);
-            }
+                images.Clear();
+                List<TmpImageDetails> tmpList = new List<TmpImageDetails>();
 
-            tmpList.ForEach(x => AddImageHelper(x.Title));
-            imagePreview.Items.Refresh();
+                using (StreamReader r = new StreamReader(JSON_FILE))
+                {
+                    string json = r.ReadToEnd();
+                    tmpList = JsonConvert.DeserializeObject<List<TmpImageDetails>>(json);
+                }
+
+                tmpList.ForEach(x => AddImageHelper(x.Title));
+                imagePreview.Items.Refresh();
+            }
         }
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
@@ -262,7 +267,7 @@ namespace FaceMorph
                     });
             }
             json = JsonConvert.SerializeObject(images); // change to tmpList
-            File.WriteAllText(@"images.json", json);
+            File.WriteAllText(JSON_FILE, json);
 
         }
 
