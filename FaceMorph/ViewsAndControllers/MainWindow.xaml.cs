@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using FaceMorph.ViewsAndControllers;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace FaceMorph
     public partial class MainWindow : Window
     {
         public const int IMAGE_WIDTH = 200;
-        public ObservableCollection<ImageDetails> images = new ObservableCollection<ImageDetails>();
+        public ObservableCollection<ImageDetails> Images = new ObservableCollection<ImageDetails>();
         private System.Windows.Forms.BindingSource imagesBindingSource = new System.Windows.Forms.BindingSource();
         private int _currentImage = 0;
         private int _previousImage = 0;
@@ -38,7 +39,7 @@ namespace FaceMorph
             InitializeComponent();
             if (loadDataAtStartUp)
                 LoadImageHelper();
-
+            //EmguTester em = new EmguTester();
         }
 
 
@@ -73,7 +74,7 @@ namespace FaceMorph
         }
 
         /// <summary>
-        /// Adds single Image to screen
+        /// Adds single Image to screen using AddImageHelper
         /// </summary>
         private void FileAddImage_Click(object sender, RoutedEventArgs e)
         {
@@ -113,9 +114,9 @@ namespace FaceMorph
 
             Image im = (Image)sender;
             _previousImage = _currentImage;
-            _currentImage = Int32.Parse(im.Uid);
+            _currentImage = int.Parse(im.Uid);
 
-            ImageDetails curr = images.Where(x => x.Id == _currentImage).FirstOrDefault();
+            ImageDetails curr = Images.Where(x => x.Id == _currentImage).FirstOrDefault();
 
             Console.WriteLine($"Current Image Method: {GetCurrentImage().Id}");
 
@@ -141,6 +142,18 @@ namespace FaceMorph
         }
 
         /// <summary>
+        /// Opens the Preview Window, with the clicked image in the middle
+        /// </summary>
+        private void ImageDoubleClicked(object sender, MouseButtonEventArgs e)
+        {
+            ImageDetails curr = Images.Where(x => x.Id == _currentImage).FirstOrDefault();
+
+            PreviewWindow previewWindow = new PreviewWindow(curr, Images);
+            previewWindow.ShowDialog(); // show dialog disables the main window
+            
+        }
+
+        /// <summary>
         /// Adds Image to image List
         /// </summary>
         private void AddImageHelper(string filePath)
@@ -151,7 +164,7 @@ namespace FaceMorph
             image.Source = imageSource;
             image.MouseUp += ImageClicked;
 
-            images.Add(
+            Images.Add(
 
                 new ImageDetails
                 {
@@ -162,7 +175,7 @@ namespace FaceMorph
                     Id = _imagesCounter
                 });
             _imagesCounter++;
-            imagesBindingSource.DataSource = images;
+            imagesBindingSource.DataSource = Images;
             imagePreview.ItemsSource = imagesBindingSource;
             imagePreview.Items.Refresh(); // todo: add to listener
         }
@@ -172,7 +185,7 @@ namespace FaceMorph
 
             if (File.Exists(JSON_FILE))
             {
-                images.Clear();
+                Images.Clear();
                 List<TmpImageDetails> tmpList = new List<TmpImageDetails>();
 
                 using (StreamReader r = new StreamReader(JSON_FILE))
@@ -188,11 +201,11 @@ namespace FaceMorph
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var x in images.ToList())
+            foreach (var x in Images.ToList())
             {
                 if (x.ToDelete)
                 {
-                    images.Remove(x);
+                    Images.Remove(x);
                     imagePreview.Items.Refresh();
 
                 }
@@ -203,7 +216,7 @@ namespace FaceMorph
         private void CmRemove_Click(object sender, RoutedEventArgs e)
         {
             ImageDetails img = GetCurrentImage();
-            images.Remove(img);
+            Images.Remove(img);
             imagePreview.Items.Refresh();
             CleanUpIndex(); // todo: add to listener
         }
@@ -216,7 +229,7 @@ namespace FaceMorph
                 int currentImage = GetCurrentImage().Id;
                 int nextImage = currentImage - 1;
 
-                images = ObservableCollectionExtension.Swap(images, currentImage, nextImage);
+                Images = ObservableCollectionExtension.Swap(Images, currentImage, nextImage);
                 CleanUpIndex(); // todo: add listener
                 imagePreview.Items.Refresh(); // todo: add to listener
                 _currentImage--;
@@ -231,7 +244,7 @@ namespace FaceMorph
                 int currentImage = GetCurrentImage().Id;
                 int nextImage = currentImage + 1;
 
-                images = ObservableCollectionExtension.Swap(images, currentImage, nextImage);
+                Images = ObservableCollectionExtension.Swap(Images, currentImage, nextImage);
                 CleanUpIndex(); // todo: add listener
                 imagePreview.Items.Refresh(); // todo: add to listener
                 _currentImage++;
@@ -257,7 +270,7 @@ namespace FaceMorph
         private void SaveProject_Click(object sender, RoutedEventArgs e)
         {
             List<TmpImageDetails> tmpList = new List<TmpImageDetails>();
-            foreach (ImageDetails imgd in images)
+            foreach (ImageDetails imgd in Images)
             {
                 tmpList.Add(
                     new TmpImageDetails
@@ -266,7 +279,7 @@ namespace FaceMorph
                         //Id = imgd.Id
                     });
             }
-            json = JsonConvert.SerializeObject(images); // change to tmpList
+            json = JsonConvert.SerializeObject(tmpList);
             File.WriteAllText(JSON_FILE, json);
 
         }
@@ -275,36 +288,36 @@ namespace FaceMorph
         {
             LoadImageHelper();
         }
-
+        
 
 
         public ImageDetails GetCurrentImage()
         {
-            foreach (ImageDetails im in images)
+            foreach (ImageDetails im in Images)
             {
                 if (im.Id == _currentImage)
                     return im;
             }
-            return images.ElementAt(0);
+            return Images.ElementAt(0);
         }
 
         public ImageDetails GetNextImage()
         {
             ImageDetails curr = GetCurrentImage();
             int i = curr.Id;
-            if (i + 1 <= images.Count)
-                return images.ElementAt(i + 1);
+            if (i + 1 <= Images.Count)
+                return Images.ElementAt(i + 1);
 
             return curr;
         }
 
         public void CleanUpIndex()
         {
-            for (int i = 0; i < images.Count; i++)
+            for (int i = 0; i < Images.Count; i++)
             {
-                images.ElementAt(i).Id = i;
+                Images.ElementAt(i).Id = i;
             }
-            _imagesCounter = images.Count;
+            _imagesCounter = Images.Count;
         }
 
         public static int NumOfImages
@@ -314,12 +327,14 @@ namespace FaceMorph
 
         public ObservableCollection<ImageDetails> GetImages()
         {
-            return images;
+            return Images;
         }
 
         private void ImagePreview_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
+            //ListViewItem lbi = ((sender as ListView).SelectedItem as ListViewItem);
+            //string m = "   You selected " + lbi.Content.ToString() + ".";
+            Console.WriteLine(sender);
         }
 
 

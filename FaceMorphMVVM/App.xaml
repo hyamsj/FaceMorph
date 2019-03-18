@@ -1,8 +1,8 @@
-﻿<Application x:Class="FaceMorph.App"
+﻿<Application x:Class="FaceMorphMVVM.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:FaceMorph"
-             StartupUri="ViewsAndControllers/MainWindow.xaml">
+             xmlns:local="clr-namespace:FaceMorphMVVM"
+             StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
          
     </Application.Resources>

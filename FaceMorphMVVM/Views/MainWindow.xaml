@@ -1,0 +1,48 @@
+﻿<Window x:Class="FaceMorphMVVM.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FaceMorphMVVM.Views"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+
+    <Grid x:Name="myGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <ListView Name="imagePreview" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3" ItemsSource="{Binding images}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <WrapPanel Orientation="Vertical">
+                        <Label Content="{Binding Title}"/>
+                    </WrapPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <StackPanel Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="10">
+                <RadioButton x:Name="RBMove" GroupName="MOD" Content="Move"  IsChecked="True"/>
+                <RadioButton x:Name="RBDelete" GroupName="MOD" Content="Delete"/>
+            </StackPanel >
+            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="r" Width="50" Height="50"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50"/>
+
+        </StackPanel>
+
+    </Grid>
+
+
+</Window>

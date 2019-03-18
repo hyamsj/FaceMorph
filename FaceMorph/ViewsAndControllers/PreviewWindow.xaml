@@ -1,0 +1,27 @@
+﻿<Window x:Class="FaceMorph.ViewsAndControllers.PreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FaceMorph.ViewsAndControllers"
+        mc:Ignorable="d"
+        Title="PreviewWindow" Height="450" Width="800">
+    <Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel>
+                <!--<Image Uid="{Binding Id}" Source="{Binding ImageData}" Width="200"/>-->
+                <Image Width="200" x:Name="prevImage" Source="{Binding PrevImage}"/>
+                <Label Content="Previous Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+            </StackPanel>
+            <StackPanel>
+                <Image Width="200" x:Name="currImage" Source="{Binding CurrImage}"/>
+                <Label Content="Current Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+            </StackPanel>
+            <StackPanel>
+                <Image Width="200" x:Name="nextImage" Source="{Binding NextImage}"/>
+                <Label Content="Next Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+</Window>
