@@ -18,7 +18,7 @@ namespace OpenCVTest
     public partial class MainWindow : Window
     {
         Image<Bgr, byte> imgInput;
-        string MyImage = @"C:\Users\joni\Pictures\_Thesis Images\tmp\DSC00021.JPG";
+        string MyImage = @"C:\Users\joni\Pictures\_Thesis Images\DSC00023.JPG";
         public MainWindow()
         {
 
@@ -31,13 +31,10 @@ namespace OpenCVTest
 
             InitializeComponent();
         }
-
-        public void DetectFaceHaar()
-        {
-            
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Uses Haarcascade
+        /// </summary>
+        private void Button_Haar_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -49,6 +46,33 @@ namespace OpenCVTest
                 foreach (var face in faces)
                 {
                     imgInput.Draw(face, new Bgr(0, 0, 255), 2);
+                }
+
+                DataContext = new ImageHolder
+                {
+                    MyImage = BitmapSourceConvert.ToBitmapSource(imgInput),
+                };
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+
+        }
+
+        private void Button_LBP_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string facePath = Path.GetFullPath(@"../../data/lbpcascade_frontalface.xml");
+                CascadeClassifier classifierFace = new CascadeClassifier(facePath);
+
+                var imgGray = imgInput.Convert<Gray, byte>().Clone();
+                Rectangle[] faces = classifierFace.DetectMultiScale(imgGray, 1.1, 4);
+                foreach (var face in faces)
+                {
+                    imgInput.Draw(face, new Bgr(0, 255, 0), 2);
                 }
 
                 DataContext = new ImageHolder

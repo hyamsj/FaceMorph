@@ -9,7 +9,8 @@
     <Grid>
 
         <Image Name="image1" Source="{Binding MyImage}" Width="300"/>
-        <Button Content="Detect Face" HorizontalAlignment="Left" Margin="671,228,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Button Content="Detect Face with Haar" HorizontalAlignment="Left" Margin="644,196,0,0" VerticalAlignment="Top" Width="120" Click="Button_Haar_Click"/>
+        <Button Content="Detect Face with LBP" HorizontalAlignment="Left" Margin="644,221,0,0" VerticalAlignment="Top" Width="120" Click="Button_LBP_Click"/>
 
     </Grid>
 </Window>
