@@ -39,7 +39,7 @@ namespace FaceMorph
             InitializeComponent();
             if (loadDataAtStartUp)
                 LoadImageHelper();
-            //EmguTester em = new EmguTester();
+            EmguTester em = new EmguTester();
         }
 
 
@@ -201,6 +201,14 @@ namespace FaceMorph
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
+
+            var selectedItems = imagePreview.SelectedItems;
+            foreach (ImageDetails selectedItem in selectedItems)
+            {
+                selectedItem.ToDelete = true;
+            }
+
+            // todo: delete this?
             foreach (var x in Images.ToList())
             {
                 if (x.ToDelete)
@@ -334,7 +342,15 @@ namespace FaceMorph
         {
             //ListViewItem lbi = ((sender as ListView).SelectedItem as ListViewItem);
             //string m = "   You selected " + lbi.Content.ToString() + ".";
-            Console.WriteLine(sender);
+            //Console.WriteLine($"Sender: {sender}, Args: {e}");
+
+            var selectedItems = imagePreview.SelectedItems;
+            foreach (ImageDetails selectedItem in selectedItems)
+            {
+                Console.WriteLine(selectedItem.Id);
+            }
+
+            //TODO: change deleting and rearranging images to work with this
         }
 
 

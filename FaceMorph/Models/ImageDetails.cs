@@ -14,11 +14,13 @@ namespace FaceMorph
     {
 
         private string _title;
+        private string _displayedTitle;
+        private string _borderColor;
         private BitmapSource _imageData; // was BitmapImage
         private Image _imageElement;
-        private string _borderColor;
         private bool _isSelected = false;
         private bool _toDelete = false;
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -63,7 +65,15 @@ namespace FaceMorph
 
         public int Id { get; set; } = 0;
 
-
+        public string DisplayedTitle
+        {
+            get
+            {
+                string tmp = _title;
+                _displayedTitle = tmp.Substring(0, tmp.LastIndexOf("/") + 1);
+                return _displayedTitle;
+            }
+        }
 
 
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
