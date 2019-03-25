@@ -1,7 +1,11 @@
-﻿using FaceMorph.Helpers;
+﻿using Emgu.CV;
+using Emgu.CV.Structure;
+using FaceMorph.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +16,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+
 
 namespace FaceMorph.ViewsAndControllers
 {
@@ -26,11 +30,20 @@ namespace FaceMorph.ViewsAndControllers
         ImageDetails next;
         ObservableCollection<ImageDetails> Images;
 
+        Image<Bgr, byte> imgInput;
+        
+        Rectangle[] faces;
+        //ObservableCollection<Rectangle> facesList = new ObservableCollection<Rectangle>();
+        List<Rectangle> facesList;
+        
+
         public PreviewWindow(ImageDetails imageDetails, ObservableCollection<ImageDetails> images)
         {
             this.Images = images;
             this.curr = imageDetails;
             DisplayImages();
+
+            imgInput = new Image<Bgr, byte>(curr.Title);
 
             InitializeComponent();
 
@@ -39,7 +52,6 @@ namespace FaceMorph.ViewsAndControllers
 
         public void DisplayImages()
         {
-
             // checks if only one image in list, i.e. nothing to morph
             if (Images.Count == 1)
             {
@@ -86,10 +98,86 @@ namespace FaceMorph.ViewsAndControllers
 
             }
 
-
-
-
         }
+
+        private void DisplayFaceClicked(object sender, RoutedEventArgs e)
+        {
+            DetectFaces(); // todo: should be called earlier (not the drawing, but the detecting)
+            DrawFaceRects();
+        }
+
+        private void RectangleClicked(object sender, MouseEventArgs e)
+        {
+            if ( facesList != null)
+            {
+                System.Windows.Point wpt = e.GetPosition((UIElement)sender);
+                //System.Drawing.Point dpt = new System.Drawing.Point()
+                //{
+                //    X = (int)wpt.X,
+                //    Y = (int)wpt.Y,
+                //};
+
+                var transform = PresentationSource.FromVisual(this).CompositionTarget.TransformFromDevice;
+                var mouse = transform.Transform(GetMousePosition());
+
+                System.Drawing.Point newmouse = new System.Drawing.Point()
+                {
+                    X = (int)wpt.X,
+                    Y = (int)wpt.Y,
+                };
+
+                //System.Drawing.Point mouseD = new System.Drawing.Point(Convert.ToInt32(wpt.X), Convert.ToInt32(wpt.Y));
+
+                foreach (Rectangle face in facesList)
+                {
+                    if (face.Contains(newmouse))
+                    {
+                        //MessageBox.Show($"Mouse X: {newmouse.X}\nMouse Y: {newmouse.Y}\nRect0 X: {facesList[0].X}\nRect1 :Y {facesList[0].Y}");
+                    }
+                }
+
+            }
+        }
+
+        public System.Windows.Point GetMousePosition()
+        {
+            System.Drawing.Point point = System.Windows.Forms.Control.MousePosition;
+            return new System.Windows.Point(point.X, point.Y);
+        }
+
+        public void DetectFaces()
+        {
+            try
+            {
+                string facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
+                CascadeClassifier classifierFace = new CascadeClassifier(facePath);
+
+                var imgGray = imgInput.Convert<Gray, byte>().Clone();
+                faces = classifierFace.DetectMultiScale(imgGray, 1.1, 4);
+                facesList = faces.OfType<Rectangle>().ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public void DrawFaceRects()
+        {
+            foreach (var face in facesList)
+            {
+                
+                imgInput.Draw(face, new Bgr(0, 0, 255), 2);
+            }
+
+            PreviewImageHolder updatedImage = new PreviewImageHolder
+            {
+                CurrImage = BitmapSourceConvert.ToBitmapSource(imgInput),
+            };
+
+            currImage.DataContext = updatedImage;
+        }
+
 
     }
 }

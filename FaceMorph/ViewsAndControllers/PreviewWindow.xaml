@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:FaceMorph.ViewsAndControllers"
         mc:Ignorable="d"
         Title="PreviewWindow" Height="450" Width="800">
-    <Grid>
+    <Grid MouseDown="RectangleClicked">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel>
                 <!--<Image Uid="{Binding Id}" Source="{Binding ImageData}" Width="200"/>-->
@@ -22,6 +22,6 @@
                 <Label Content="Next Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
         </StackPanel>
-
+        <Button Content="Display Face" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="355,332,0,0" Click="DisplayFaceClicked"/>
     </Grid>
 </Window>

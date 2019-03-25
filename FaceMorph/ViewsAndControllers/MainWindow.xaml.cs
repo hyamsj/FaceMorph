@@ -39,7 +39,7 @@ namespace FaceMorph
             InitializeComponent();
             if (loadDataAtStartUp)
                 LoadImageHelper();
-            EmguTester em = new EmguTester();
+            //EmguTester em = new EmguTester();
         }
 
 

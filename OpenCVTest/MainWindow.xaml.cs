@@ -19,6 +19,7 @@ namespace OpenCVTest
     {
         Image<Bgr, byte> imgInput;
         string MyImage = @"C:\Users\joni\Pictures\_Thesis Images\DSC00023.JPG";
+        Rectangle[] faces;
         public MainWindow()
         {
 
@@ -42,7 +43,7 @@ namespace OpenCVTest
                 CascadeClassifier classifierFace = new CascadeClassifier(facePath);
 
                 var imgGray = imgInput.Convert<Gray, byte>().Clone();
-                Rectangle[] faces = classifierFace.DetectMultiScale(imgGray, 1.1, 4);
+                faces = classifierFace.DetectMultiScale(imgGray, 1.1, 4);
                 foreach (var face in faces)
                 {
                     imgInput.Draw(face, new Bgr(0, 0, 255), 2);
