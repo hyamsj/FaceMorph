@@ -106,45 +106,6 @@ namespace FaceMorph.ViewsAndControllers
             DrawFaceRects();
         }
 
-        private void RectangleClicked(object sender, MouseEventArgs e)
-        {
-            if ( facesList != null)
-            {
-                System.Windows.Point wpt = e.GetPosition((UIElement)sender);
-                //System.Drawing.Point dpt = new System.Drawing.Point()
-                //{
-                //    X = (int)wpt.X,
-                //    Y = (int)wpt.Y,
-                //};
-
-                var transform = PresentationSource.FromVisual(this).CompositionTarget.TransformFromDevice;
-                var mouse = transform.Transform(GetMousePosition());
-
-                System.Drawing.Point newmouse = new System.Drawing.Point()
-                {
-                    X = (int)wpt.X,
-                    Y = (int)wpt.Y,
-                };
-
-                //System.Drawing.Point mouseD = new System.Drawing.Point(Convert.ToInt32(wpt.X), Convert.ToInt32(wpt.Y));
-
-                foreach (Rectangle face in facesList)
-                {
-                    if (face.Contains(newmouse))
-                    {
-                        //MessageBox.Show($"Mouse X: {newmouse.X}\nMouse Y: {newmouse.Y}\nRect0 X: {facesList[0].X}\nRect1 :Y {facesList[0].Y}");
-                    }
-                }
-
-            }
-        }
-
-        public System.Windows.Point GetMousePosition()
-        {
-            System.Drawing.Point point = System.Windows.Forms.Control.MousePosition;
-            return new System.Windows.Point(point.X, point.Y);
-        }
-
         public void DetectFaces()
         {
             try
@@ -178,6 +139,16 @@ namespace FaceMorph.ViewsAndControllers
             currImage.DataContext = updatedImage;
         }
 
+
+        private void LeftPreviewButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void RightPreviewButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
 
     }
 }

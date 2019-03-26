@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FaceMorph"
         mc:Ignorable="d"
-        Title="FaceMorph" Height="450" Width="800">
+        Title="FaceMorph" MinHeight="375" MinWidth="610" Height="450" Width="800">
 
     <Grid x:Name="myGrid">
         <Grid.ColumnDefinitions>
@@ -46,15 +46,17 @@
             </Menu>
         </DockPanel>
 
-        <ListView x:Name="imagePreview" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3" SelectionChanged="ImagePreview_SelectionChanged">
+        <ListView x:Name="imagePreview" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3" SelectionChanged="ImagePreview_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible">
+
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <UniformGrid Columns="3" />
+                    <WrapPanel Orientation="Horizontal"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
+
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <WrapPanel Orientation="Vertical">
+                    <!--<WrapPanel Orientation="Horizontal">--> 
                         <ContentControl MouseDoubleClick="ImageDoubleClicked">
                             <Border BorderBrush="{Binding BorderColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" Width="200">
                                 <StackPanel>
@@ -71,7 +73,7 @@
                                 </StackPanel>
                             </Border>
                         </ContentControl>
-                    </WrapPanel>
+                    <!--</WrapPanel>-->
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

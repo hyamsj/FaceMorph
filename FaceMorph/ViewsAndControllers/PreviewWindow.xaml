@@ -6,22 +6,27 @@
         xmlns:local="clr-namespace:FaceMorph.ViewsAndControllers"
         mc:Ignorable="d"
         Title="PreviewWindow" Height="450" Width="800">
-    <Grid MouseDown="RectangleClicked">
+    <Grid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel>
                 <!--<Image Uid="{Binding Id}" Source="{Binding ImageData}" Width="200"/>-->
-                <Image Width="200" x:Name="prevImage" Source="{Binding PrevImage}"/>
+                <Image Width="200" Height="250" x:Name="prevImage" Source="{Binding PrevImage}"/>
                 <Label Content="Previous Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
             <StackPanel>
-                <Image Width="200" x:Name="currImage" Source="{Binding CurrImage}"/>
+                <Image Width="200" Height="250" x:Name="currImage" Source="{Binding CurrImage}"/>
                 <Label Content="Current Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
             <StackPanel>
-                <Image Width="200" x:Name="nextImage" Source="{Binding NextImage}"/>
+                <Image Width="200" Height="250" x:Name="nextImage" Source="{Binding NextImage}"/>
                 <Label Content="Next Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
         </StackPanel>
-        <Button Content="Display Face" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="355,332,0,0" Click="DisplayFaceClicked"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="LeftPreviewButton_Click"/>
+            <Button FontSize="12" Content="Display Face" Width="50" Height="50" Click="DisplayFaceClicked"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="RightPreviewButton_Click"/>
+        </StackPanel>
+        
     </Grid>
 </Window>
