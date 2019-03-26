@@ -23,9 +23,15 @@
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="LeftPreviewButton_Click"/>
-            <Button FontSize="12" Content="Display Face" Width="50" Height="50" Click="DisplayFaceClicked"/>
-            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="RightPreviewButton_Click"/>
+            <StackPanel>
+            <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
+                <Label x:Name="facesCount" Content=""></Label>  
+            </StackPanel>
+            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click"/>
+            <Button Width="50" Height="50" Click="DisplayFaceClicked">
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center" Text="Display Face"/>
+            </Button>
+            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="ChangeFaceRightButton_Click"/>
         </StackPanel>
         
     </Grid>

@@ -31,11 +31,12 @@ namespace FaceMorph.ViewsAndControllers
         ObservableCollection<ImageDetails> Images;
 
         Image<Bgr, byte> imgInput;
-        
-        Rectangle[] faces;
-        //ObservableCollection<Rectangle> facesList = new ObservableCollection<Rectangle>();
+
+        Rectangle[] facesArr;
         List<Rectangle> facesList;
-        
+
+        private bool facesDetected = false;
+        private int currentFace = 0;
 
         public PreviewWindow(ImageDetails imageDetails, ObservableCollection<ImageDetails> images)
         {
@@ -102,11 +103,17 @@ namespace FaceMorph.ViewsAndControllers
 
         private void DisplayFaceClicked(object sender, RoutedEventArgs e)
         {
-            DetectFaces(); // todo: should be called earlier (not the drawing, but the detecting)
-            DrawFaceRects();
+            if (!facesDetected)
+            {
+                DetectFaces(); // todo: should be called earlier (not the drawing, but the detecting)
+                DrawFaceRects();
+                facesDetected = true;
+                facesCount.Content = $"{facesList.Count}";
+            }
+
         }
 
-        public void DetectFaces()
+        public void DetectFaces() // todo: call earlier
         {
             try
             {
@@ -114,8 +121,8 @@ namespace FaceMorph.ViewsAndControllers
                 CascadeClassifier classifierFace = new CascadeClassifier(facePath);
 
                 var imgGray = imgInput.Convert<Gray, byte>().Clone();
-                faces = classifierFace.DetectMultiScale(imgGray, 1.1, 4);
-                facesList = faces.OfType<Rectangle>().ToList();
+                facesArr = classifierFace.DetectMultiScale(imgGray, 1.1, 4);
+                facesList = facesArr.OfType<Rectangle>().ToList();
             }
             catch (Exception ex)
             {
@@ -125,12 +132,23 @@ namespace FaceMorph.ViewsAndControllers
 
         public void DrawFaceRects()
         {
-            foreach (var face in facesList)
+            if (facesList.Count > 0)
             {
-                
-                imgInput.Draw(face, new Bgr(0, 0, 255), 2);
-            }
+                for (int i = 0; i < facesList.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        imgInput.Draw(facesList[i], new Bgr(0, 255, 0), 2);
+                        currentFace = i;
+                    }
+                    else if (i > 0)
+                    {
+                        imgInput.Draw(facesList[i], new Bgr(0, 0, 255), 2);
+                    }
 
+                }
+
+            }
             PreviewImageHolder updatedImage = new PreviewImageHolder
             {
                 CurrImage = BitmapSourceConvert.ToBitmapSource(imgInput),
@@ -140,14 +158,75 @@ namespace FaceMorph.ViewsAndControllers
         }
 
 
-        private void LeftPreviewButton_Click(object sender, RoutedEventArgs e)
+        private void ChangeFaceLeftButton_Click(object sender, RoutedEventArgs e)
         {
+            if (facesDetected)
+            {
+                if (facesList.Count > 1)
+                {
+                    if (currentFace == 0)
+                    {
+                        currentFace = facesList.Count - 1;
+                        RedrawFaces();
+                    }
+                    else
+                    {
+                        currentFace--;
+                        RedrawFaces();
+                    }
+                }
+            }
 
         }
 
-        private void RightPreviewButton_Click(object sender, RoutedEventArgs e)
+        private void ChangeFaceRightButton_Click(object sender, RoutedEventArgs e)
         {
+            if (facesDetected)
+            {
+                if (facesList.Count > 1)
+                {
+                    if (currentFace == facesList.Count - 1)
+                    {
+                        currentFace = 0;
+                        RedrawFaces();
+                    }
+                    else
+                    {
+                        currentFace++;
+                        RedrawFaces();
+                    }
+                }
+            }
+        }
 
+        public void RedrawFaces()
+        {
+            
+            imgInput = new Image<Bgr, byte>(curr.Title);
+
+            if (facesList.Count > 0)
+            {
+                for (int i = 0; i < facesList.Count; i++)
+                {
+                    if (i == currentFace)
+                    {
+                        imgInput.Draw(facesList[i], new Bgr(0, 255, 0), 2);
+                    }
+                    else if (i != currentFace)
+                    {
+                        imgInput.Draw(facesList[i], new Bgr(0, 0, 255), 2);
+                    }
+
+                }
+
+            }
+            PreviewImageHolder updatedImage = new PreviewImageHolder
+            {
+                CurrImage = BitmapSourceConvert.ToBitmapSource(imgInput),
+            };
+            currImage.DataContext = updatedImage;
+            curr.FaceLocation = facesList[currentFace];
+            
         }
 
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,7 +21,14 @@ namespace FaceMorph
         private Image _imageElement;
         private bool _isSelected = false;
         private bool _toDelete = false;
+        private System.Drawing.Rectangle _faceLocation;
 
+
+        public System.Drawing.Rectangle FaceLocation
+        {
+            get { return _faceLocation; }
+            set { _faceLocation = value; }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
