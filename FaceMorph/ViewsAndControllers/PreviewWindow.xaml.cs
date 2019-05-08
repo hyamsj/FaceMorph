@@ -35,6 +35,13 @@ namespace FaceMorph.ViewsAndControllers
         Rectangle[] facesArr;
         List<Rectangle> facesList;
 
+        public const int RECT_WIDTH = 5;
+        public const double HAAR_SCALE_FACTOR = 1.05;
+        public const int HAAR_SCALE_MIN_NEIGHBOURS = 4;
+        System.Drawing.Size HAAR_MIN_SIZE = new System.Drawing.Size(30, 30); // todo: should be % of image pixel height and width
+        System.Drawing.Size HAAR_MAX_SIZE = new System.Drawing.Size(3000, 3000);
+
+
         private bool facesDetected = false;
         private int currentFace = 0;
 
@@ -121,7 +128,7 @@ namespace FaceMorph.ViewsAndControllers
                 CascadeClassifier classifierFace = new CascadeClassifier(facePath);
 
                 var imgGray = imgInput.Convert<Gray, byte>().Clone();
-                facesArr = classifierFace.DetectMultiScale(imgGray, 1.1, 4);
+                facesArr = classifierFace.DetectMultiScale(imgGray, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, HAAR_MIN_SIZE, HAAR_MAX_SIZE);
                 facesList = facesArr.OfType<Rectangle>().ToList();
             }
             catch (Exception ex)
@@ -136,14 +143,15 @@ namespace FaceMorph.ViewsAndControllers
             {
                 for (int i = 0; i < facesList.Count; i++)
                 {
+                    Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
                     if (i == 0)
                     {
-                        imgInput.Draw(facesList[i], new Bgr(0, 255, 0), 2);
+                        imgInput.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
                         currentFace = i;
                     }
                     else if (i > 0)
                     {
-                        imgInput.Draw(facesList[i], new Bgr(0, 0, 255), 2);
+                        imgInput.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
                     }
 
                 }
@@ -201,7 +209,7 @@ namespace FaceMorph.ViewsAndControllers
 
         public void RedrawFaces()
         {
-            
+
             imgInput = new Image<Bgr, byte>(curr.Title);
 
             if (facesList.Count > 0)
@@ -210,11 +218,11 @@ namespace FaceMorph.ViewsAndControllers
                 {
                     if (i == currentFace)
                     {
-                        imgInput.Draw(facesList[i], new Bgr(0, 255, 0), 2);
+                        imgInput.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
                     }
                     else if (i != currentFace)
                     {
-                        imgInput.Draw(facesList[i], new Bgr(0, 0, 255), 2);
+                        imgInput.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
                     }
 
                 }
@@ -226,7 +234,7 @@ namespace FaceMorph.ViewsAndControllers
             };
             currImage.DataContext = updatedImage;
             curr.FaceLocation = facesList[currentFace];
-            
+
         }
 
     }
