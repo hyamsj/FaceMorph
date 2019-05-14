@@ -10,7 +10,7 @@ namespace FaceMorph.Helpers
 {
     public class PreviewImageHolder
     {
-        public ImageSource PrevImage { get; set; }
+        public ImageSource MorphImage { get; set; }
         public ImageSource CurrImage { get; set; }
         public ImageSource NextImage { get; set; }
 

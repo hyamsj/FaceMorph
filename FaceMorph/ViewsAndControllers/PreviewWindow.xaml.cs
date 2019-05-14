@@ -1,5 +1,7 @@
 ﻿using Emgu.CV;
+using Emgu.CV.Face;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using FaceMorph.Helpers;
 using System;
 using System.Collections.Generic;
@@ -26,14 +28,34 @@ namespace FaceMorph.ViewsAndControllers
     public partial class PreviewWindow : Window
     {
         ImageDetails curr;
-        ImageDetails prev;
         ImageDetails next;
         ObservableCollection<ImageDetails> Images;
 
-        Image<Bgr, byte> imgInput;
+        Image<Bgr, byte> currImageI;
+        Image<Bgr, byte> nextImageI;
 
-        Rectangle[] facesArr;
-        List<Rectangle> facesList;
+        Mat currImageMat = new Mat();
+        Mat nextImageMat = new Mat();
+        Mat morphImageMat = new Mat();
+
+        VectorOfPointF ffpCurr, ffpNext; // points with landmarks
+
+        Rectangle[] facesArrCurr;
+        Rectangle[] facesArrNext;
+        List<Rectangle> facesListCurr;
+        List<Rectangle> facesListNext;
+
+        FacemarkLBFParams facemarkParam;
+        FacemarkLBF facemark;
+        VectorOfVectorOfPointF landmarksCurr;
+        VectorOfVectorOfPointF landmarksNext;
+
+        VectorOfVectorOfInt delaunayTri = new VectorOfVectorOfInt();
+
+        Triangle2DF[] delaunayTrianglesCurr, delaunayTrianglesNext;
+        PointF[] ptsCurr, ptsNext;
+
+
 
         public const int RECT_WIDTH = 5;
         public const double HAAR_SCALE_FACTOR = 1.05;
@@ -43,7 +65,8 @@ namespace FaceMorph.ViewsAndControllers
 
 
         private bool facesDetected = false;
-        private int currentFace = 0;
+        private int currentFaceCurr = 0;
+        private int currentFaceNext = 0;
 
         public PreviewWindow(ImageDetails imageDetails, ObservableCollection<ImageDetails> images)
         {
@@ -51,7 +74,8 @@ namespace FaceMorph.ViewsAndControllers
             this.curr = imageDetails;
             DisplayImages();
 
-            imgInput = new Image<Bgr, byte>(curr.Title);
+            currImageI = new Image<Bgr, byte>(curr.Title);
+            nextImageI = new Image<Bgr, byte>(next.Title);
 
             InitializeComponent();
 
@@ -85,21 +109,17 @@ namespace FaceMorph.ViewsAndControllers
             // checks if current picture is the last
             else if (curr.Id == Images.Count - 1)
             {
-
-                prev = Images.Where(x => x.Id == curr.Id - 1).FirstOrDefault();
                 this.DataContext = new PreviewImageHolder()
                 {
-                    PrevImage = new BitmapImage(new Uri(prev.Title)),
                     CurrImage = new BitmapImage(new Uri(curr.Title)),
                 };
             }
             else
             {
-                prev = Images.Where(x => x.Id == curr.Id - 1).FirstOrDefault();
+                //prev = Images.Where(x => x.Id == curr.Id - 1).FirstOrDefault();
                 next = Images.Where(x => x.Id == curr.Id + 1).FirstOrDefault();
                 this.DataContext = new PreviewImageHolder()
                 {
-                    PrevImage = new BitmapImage(new Uri(prev.Title)),
                     CurrImage = new BitmapImage(new Uri(curr.Title)),
                     NextImage = new BitmapImage(new Uri(next.Title)),
                 };
@@ -112,24 +132,71 @@ namespace FaceMorph.ViewsAndControllers
         {
             if (!facesDetected)
             {
-                DetectFaces(); // todo: should be called earlier (not the drawing, but the detecting)
-                DrawFaceRects();
+                DetectFaceInfo(); // todo: should be called earlier (not the drawing, but the detecting)
+                DrawFaceRectsCurr(facesListCurr);
+                DrawFaceRectsNext(facesListNext);
                 facesDetected = true;
-                facesCount.Content = $"{facesList.Count}";
+                facesCount.Content = $"{facesListCurr.Count}";
             }
 
         }
 
-        public void DetectFaces() // todo: call earlier
+        public void DetectFaceInfo() // todo: call earlier
         {
+
             try
             {
+                // Detect Faces
                 string facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
                 CascadeClassifier classifierFace = new CascadeClassifier(facePath);
+                Image<Gray, byte> imgGrayCurr = currImageI.Convert<Gray, byte>().Clone();
+                Image<Gray, byte> imgGrayNext = nextImageI.Convert<Gray, byte>().Clone();
 
-                var imgGray = imgInput.Convert<Gray, byte>().Clone();
-                facesArr = classifierFace.DetectMultiScale(imgGray, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, HAAR_MIN_SIZE, HAAR_MAX_SIZE);
-                facesList = facesArr.OfType<Rectangle>().ToList();
+                facesArrCurr = classifierFace.DetectMultiScale(imgGrayCurr, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, HAAR_MIN_SIZE, HAAR_MAX_SIZE);
+                facesArrNext = classifierFace.DetectMultiScale(imgGrayNext, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, HAAR_MIN_SIZE, HAAR_MAX_SIZE);
+
+                facesListCurr = facesArrCurr.OfType<Rectangle>().ToList();
+                facesListNext = facesArrNext.OfType<Rectangle>().ToList();
+
+                //// Find facial feature points
+                VectorOfRect vrLeft = new VectorOfRect(facesArrCurr);
+                VectorOfRect vrRight = new VectorOfRect(facesArrNext);
+                landmarksNext = new VectorOfVectorOfPointF();
+                landmarksCurr = new VectorOfVectorOfPointF();
+
+                //// fill mat
+                currImageMat = CvInvoke.Imread(curr.Title);
+                nextImageMat = CvInvoke.Imread(next.Title);
+                facemarkParam = new FacemarkLBFParams();
+                facemark = new FacemarkLBF(facemarkParam);
+                facemark.LoadModel(@"../../data/lbfmodel.yaml");
+                facemark.Fit(currImageMat, vrLeft, landmarksCurr);
+                facemark.Fit(nextImageMat, vrRight, landmarksNext);
+
+                ffpCurr = landmarksCurr[0];
+                ffpNext = landmarksNext[1]; // todo: user needs to be able to choose face
+
+                // Delaunay
+                using (VectorOfPointF vpfCurr = ffpCurr)
+                using (VectorOfPointF vpfNext = ffpNext)
+                {
+                    ptsCurr = vpfCurr.ToArray();
+                    ptsNext = vpfNext.ToArray();
+
+                    using (Subdiv2D subdivisionLeft = new Subdiv2D(ptsCurr))
+                    using (Subdiv2D subdivisionRight = new Subdiv2D(ptsNext))
+                    {
+                        //Obtain the delaunay's triangulation from the set of points;
+                        delaunayTrianglesCurr = subdivisionLeft.GetDelaunayTriangles();
+                        delaunayTrianglesNext = subdivisionRight.GetDelaunayTriangles();
+                    }
+                }
+
+                //DrawFFPCurr();
+                //DrawFFPNext();
+                DrawDelaunayCurr();
+                DrawDelaunayNext();
+
             }
             catch (Exception ex)
             {
@@ -137,7 +204,7 @@ namespace FaceMorph.ViewsAndControllers
             }
         }
 
-        public void DrawFaceRects()
+        public void DrawFaceRectsCurr(List<Rectangle> facesList)
         {
             if (facesList.Count > 0)
             {
@@ -146,12 +213,12 @@ namespace FaceMorph.ViewsAndControllers
                     Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
                     if (i == 0)
                     {
-                        imgInput.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
-                        currentFace = i;
+                        currImageI.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
+                        currentFaceCurr = i;
                     }
                     else if (i > 0)
                     {
-                        imgInput.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
+                        currImageI.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
                     }
 
                 }
@@ -159,27 +226,105 @@ namespace FaceMorph.ViewsAndControllers
             }
             PreviewImageHolder updatedImage = new PreviewImageHolder
             {
-                CurrImage = BitmapSourceConvert.ToBitmapSource(imgInput),
+                CurrImage = BitmapSourceConvert.ToBitmapSource(currImageI),
             };
 
             currImage.DataContext = updatedImage;
+
         }
 
+        public void DrawFaceRectsNext(List<Rectangle> facesList)
+        {
+            if (facesList.Count > 0)
+            {
+                for (int i = 0; i < facesList.Count; i++)
+                {
+                    Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
+                    if (i == 0)
+                    {
+                        nextImageI.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
+                        currentFaceNext = i;
+                    }
+                    else if (i > 0)
+                    {
+                        nextImageI.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
+                    }
+
+                }
+
+            }
+            PreviewImageHolder updatedImage = new PreviewImageHolder
+            {
+                NextImage = BitmapSourceConvert.ToBitmapSource(nextImageI),
+            };
+
+            nextImage.DataContext = updatedImage;
+
+            //CvInvoke.Imwrite("test.jpg",currImageI);
+        }
+
+        public void DrawFFPCurr()
+        {
+            Image<Bgr, byte> myImage = currImageMat.ToImage<Bgr, byte>();
+            FaceInvoke.DrawFacemarks(myImage, ffpCurr, new MCvScalar(255, 0, 0));
+            CvInvoke.Imwrite("testffp.jpg", myImage);
+            currImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
+        }
+
+        public void DrawFFPNext()
+        {
+            Image<Bgr, byte> myImage = nextImageMat.ToImage<Bgr, byte>();
+            FaceInvoke.DrawFacemarks(myImage, ffpNext, new MCvScalar(255, 0, 0));
+            CvInvoke.Imwrite("testffp.jpg", myImage);
+            nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
+        }
+
+        public void DrawDelaunayCurr()
+        {
+            Image<Bgr, byte> myImage = currImageMat.ToImage<Bgr, byte>();
+
+            foreach (Triangle2DF triangle in delaunayTrianglesCurr)
+            {
+
+                System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                {
+                    CvInvoke.Polylines(myImage, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                }
+            }
+            currImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
+        }
+
+        public void DrawDelaunayNext()
+        {
+            Image<Bgr, byte> myImage = nextImageMat.ToImage<Bgr, byte>();
+
+            foreach (Triangle2DF triangle in delaunayTrianglesNext)
+            {
+
+                System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                {
+                    CvInvoke.Polylines(myImage, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                }
+            }
+            nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
+        }
 
         private void ChangeFaceLeftButton_Click(object sender, RoutedEventArgs e)
         {
             if (facesDetected)
             {
-                if (facesList.Count > 1)
+                if (facesListCurr.Count > 1)
                 {
-                    if (currentFace == 0)
+                    if (currentFaceCurr == 0)
                     {
-                        currentFace = facesList.Count - 1;
+                        currentFaceCurr = facesListCurr.Count - 1;
                         RedrawFaces();
                     }
                     else
                     {
-                        currentFace--;
+                        currentFaceCurr--;
                         RedrawFaces();
                     }
                 }
@@ -191,16 +336,16 @@ namespace FaceMorph.ViewsAndControllers
         {
             if (facesDetected)
             {
-                if (facesList.Count > 1)
+                if (facesListCurr.Count > 1)
                 {
-                    if (currentFace == facesList.Count - 1)
+                    if (currentFaceCurr == facesListCurr.Count - 1)
                     {
-                        currentFace = 0;
+                        currentFaceCurr = 0;
                         RedrawFaces();
                     }
                     else
                     {
-                        currentFace++;
+                        currentFaceCurr++;
                         RedrawFaces();
                     }
                 }
@@ -210,19 +355,19 @@ namespace FaceMorph.ViewsAndControllers
         public void RedrawFaces()
         {
 
-            imgInput = new Image<Bgr, byte>(curr.Title);
+            currImageI = new Image<Bgr, byte>(curr.Title);
 
-            if (facesList.Count > 0)
+            if (facesListCurr.Count > 0)
             {
-                for (int i = 0; i < facesList.Count; i++)
+                for (int i = 0; i < facesListCurr.Count; i++)
                 {
-                    if (i == currentFace)
+                    if (i == currentFaceCurr)
                     {
-                        imgInput.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
+                        currImageI.Draw(facesListCurr[i], new Bgr(0, 255, 0), RECT_WIDTH);
                     }
-                    else if (i != currentFace)
+                    else if (i != currentFaceCurr)
                     {
-                        imgInput.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
+                        currImageI.Draw(facesListCurr[i], new Bgr(0, 0, 255), RECT_WIDTH);
                     }
 
                 }
@@ -230,10 +375,10 @@ namespace FaceMorph.ViewsAndControllers
             }
             PreviewImageHolder updatedImage = new PreviewImageHolder
             {
-                CurrImage = BitmapSourceConvert.ToBitmapSource(imgInput),
+                CurrImage = BitmapSourceConvert.ToBitmapSource(currImageI),
             };
             currImage.DataContext = updatedImage;
-            curr.FaceLocation = facesList[currentFace];
+            curr.FaceLocation = facesListCurr[currentFaceCurr];
 
         }
 

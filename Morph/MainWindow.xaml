@@ -1,0 +1,22 @@
+﻿<Window x:Class="Morph.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Morph"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Image Width="200" Height="250" x:Name="leftImage"/>
+            <Image Width="200" Height="250" x:Name="morphedImage" Source="{Binding MorhpedImage}"/>
+            <Image Width="200" Height="250" x:Name="rightImage" Source="{Binding RightImage}"/>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20">
+            <CheckBox Content="Show Detected Face" Unchecked="ShowFaceCB" Checked="ShowFaceCB" x:Name="ShowFace"/>
+            <CheckBox Content="Show Facial Feature Points" Unchecked="ShowFPCB" Checked="ShowFPCB" x:Name="ShowFP"/>
+            <CheckBox Content="Show Delaunay Triangles" Unchecked="ShowDelaunayCB" Checked="ShowDelaunayCB" x:Name="ShowDelaunay"/>
+            <Button Content="Morph" Click="MorphButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

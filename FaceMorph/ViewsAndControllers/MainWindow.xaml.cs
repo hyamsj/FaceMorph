@@ -1,4 +1,5 @@
-﻿using FaceMorph.ViewsAndControllers;
+﻿using FaceMorph.Helpers;
+using FaceMorph.ViewsAndControllers;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
@@ -147,6 +148,9 @@ namespace FaceMorph
         private void ImageDoubleClicked(object sender, MouseButtonEventArgs e)
         {
             ImageDetails curr = Images.Where(x => x.Id == _currentImage).FirstOrDefault();
+
+            MorphImage m = new MorphImage(curr);
+            //m.GetFaceInfo();
 
             PreviewWindow previewWindow = new PreviewWindow(curr, Images);
             previewWindow.ShowDialog(); // show dialog disables the main window
