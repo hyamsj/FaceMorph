@@ -16,7 +16,7 @@ namespace MorphPrototype
     public partial class MainWindow : Window
     {
         public int count = 0;
-        public float alpha = 0.5f;
+        public float alpha = 0.0f;
         public float sign = 1.0f;
 
         Mat img1 = new Mat();
