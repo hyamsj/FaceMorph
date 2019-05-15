@@ -14,7 +14,7 @@ namespace FaceMorph.Helpers
     public class MorphImage
     {
         public int count = 0;
-        public float alpha = 0.0f;
+        public float alpha = 0.5f;
         public float sign = 1.0f;
 
         Mat img1 = new Mat();
@@ -26,11 +26,86 @@ namespace FaceMorph.Helpers
         VectorOfPointF points2 = new VectorOfPointF();
         VectorOfPointF pointsM = new VectorOfPointF();
 
-        public MorphImage(ImageDetails curr)
+        public MorphImage(Mat img1, Mat img2, VectorOfPointF points1, VectorOfPointF points2)
         {
-            var x = curr.Title;
+            img1.ConvertTo(img1, Emgu.CV.CvEnum.DepthType.Cv32F);
+            img2.ConvertTo(img2, Emgu.CV.CvEnum.DepthType.Cv32F);
 
-            
+            this.points1 = points1;
+            this.points2 = points2;
+
+            // Create an instance of Subdiv2D
+            Rectangle rect = new Rectangle(0, 0, img1.Size.Width, img1.Size.Height);
+            Subdiv2D subdiv = new Subdiv2D(rect);
+
+            // Create and Draw the Delaunay triangulation
+            triangleIndexes = new VectorOfVectorOfInt();
+            CreateDelaunay(ref img1, ref subdiv, ref points1, false, ref triangleIndexes);
+
+            //// Draw the Delaunay triangulation of face 1
+            //Mat img1D = img1.Clone();
+            //DrawDelaunay(ref img1D, ref subdiv, new MCvScalar(255, 255, 255));
+
+
+            //// Draw the Delaunay triangulation of face 2
+            //Mat img2D = img2.Clone();
+            //DrawDelaunay(ref img2D, ref points2, triangleIndexes, new MCvScalar(255, 255, 255));
+            //img2D.ConvertTo(img2D, Emgu.CV.CvEnum.DepthType.Cv8U);
+
+            //compute weighted average point coordinates
+            pointsM = new VectorOfPointF();
+            for (int i = 0; i < points1.Size; i++)
+            {
+                float x = (1 - alpha) * points1[i].X + alpha * points2[i].X;
+                float y = (1 - alpha) * points1[i].Y + alpha * points2[i].Y;
+                PointF[] pf = { new PointF(x, y) };
+                pointsM.Push(pf);
+            }
+
+            //empty image for morphed face
+            Mat imgM = Mat.Zeros(img1.Rows, img1.Cols, Emgu.CV.CvEnum.DepthType.Cv32F, 3);
+
+            for (int i = 0; i < triangleIndexes.Size; i++)
+            {
+                VectorOfPointF t1 = new VectorOfPointF();
+                VectorOfPointF t2 = new VectorOfPointF();
+                VectorOfPointF tM = new VectorOfPointF();
+
+                PointF ppft10 = points1[triangleIndexes[i][0]];
+                PointF ppft11 = points1[triangleIndexes[i][1]];
+                PointF ppft12 = points1[triangleIndexes[i][2]];
+                PointF ppft20 = points2[triangleIndexes[i][0]];
+                PointF ppft21 = points2[triangleIndexes[i][1]];
+                PointF ppft22 = points2[triangleIndexes[i][2]];
+                PointF ppftM0 = pointsM[triangleIndexes[i][0]];
+                PointF ppftM1 = pointsM[triangleIndexes[i][1]];
+                PointF ppftM2 = pointsM[triangleIndexes[i][2]];
+
+                PointF[] pft10 = { new PointF(ppft10.X, ppft10.Y) };
+                PointF[] pft11 = { new PointF(ppft11.X, ppft11.Y) };
+                PointF[] pft12 = { new PointF(ppft12.X, ppft12.Y) };
+                PointF[] pft20 = { new PointF(ppft20.X, ppft20.Y) };
+                PointF[] pft21 = { new PointF(ppft21.X, ppft21.Y) };
+                PointF[] pft22 = { new PointF(ppft22.X, ppft22.Y) };
+                PointF[] pftM0 = { new PointF(ppftM0.X, ppftM0.Y) };
+                PointF[] pftM1 = { new PointF(ppftM1.X, ppftM1.Y) };
+                PointF[] pftM2 = { new PointF(ppftM2.X, ppftM2.Y) };
+
+                t1.Push(pft10);
+                t1.Push(pft11);
+                t1.Push(pft12);
+                t2.Push(pft20);
+                t2.Push(pft21);
+                t2.Push(pft22);
+                tM.Push(pftM0);
+                tM.Push(pftM1);
+                tM.Push(pftM2);
+
+                MorphTriangle(ref img1, ref img2, ref imgM, ref t1, ref t2, ref tM, alpha);
+            }
+            imgM.ConvertTo(imgM, Emgu.CV.CvEnum.DepthType.Cv8U);
+            CvInvoke.Imshow("Morphed Face", imgM);
+
         }
 
 
@@ -230,153 +305,8 @@ namespace FaceMorph.Helpers
             var x = new Mat(imgM, rM);
             tmp.CopyTo(x);
 
-
-
-            Console.WriteLine();
         }
 
-        public void GetFaceInfo()
-        {
-
-            // Read input images
-            img1 = CvInvoke.Imread($"../../hillary_clinton.jpg");
-            img2 = CvInvoke.Imread($"../../donald_trump.jpg");
-
-            img1.ConvertTo(img1, Emgu.CV.CvEnum.DepthType.Cv32F);
-            img2.ConvertTo(img2, Emgu.CV.CvEnum.DepthType.Cv32F);
-
-            points1 = new VectorOfPointF();
-            points2 = new VectorOfPointF();
-            //Read points of face 1
-            PointF[] pts1 = {
-                new PointF(125, 358), new PointF(128, 402), new PointF(132, 445), new PointF(137, 490), new PointF(151, 532), new PointF(178, 566),
-                new PointF(216, 595), new PointF(260, 616), new PointF(304, 622), new PointF(347, 612), new PointF(388, 591), new PointF(426, 563),
-                new PointF(452, 526), new PointF(466, 482), new PointF(470, 437), new PointF(474, 392), new PointF(477, 345), new PointF(150, 332),
-                new PointF(171, 312), new PointF(200, 304), new PointF(230, 307), new PointF(259, 319), new PointF(315, 314), new PointF(345, 299),
-                new PointF(377, 294), new PointF(410, 300), new PointF(434, 319), new PointF(289, 350), new PointF(290, 382), new PointF(291, 413),
-                new PointF(292, 444), new PointF(258, 458), new PointF(275, 462), new PointF(294, 467), new PointF(313, 460), new PointF(331, 454),
-                new PointF(184, 358), new PointF(201, 344), new PointF(224, 345), new PointF(245, 363), new PointF(224, 368), new PointF(201, 368),
-                new PointF(339, 358), new PointF(358, 337), new PointF(381, 335), new PointF(401, 349), new PointF(383, 359), new PointF(360, 361),
-                new PointF(214, 493), new PointF(245, 489), new PointF(274, 488), new PointF(295, 489), new PointF(316, 485), new PointF(346, 483),
-                new PointF(381, 484), new PointF(351, 524), new PointF(321, 540), new PointF(299, 543), new PointF(277, 542), new PointF(246, 530),
-                new PointF(223, 495), new PointF(275, 499), new PointF(296, 499), new PointF(317, 496), new PointF(372, 487), new PointF(319, 523),
-                new PointF(298, 526), new PointF(276, 525), new PointF(495, 400), new PointF(264, 736), new PointF(0, 774),   new PointF(599, 706),
-                new PointF(0, 0),     new PointF(0, 400),   new PointF(0, 799),   new PointF(300, 799), new PointF(599, 799), new PointF(599, 400),
-                new PointF(599, 0),   new PointF(300, 0)
-            };
-            //Read points of face 2
-            PointF[] pts2 = {
-                new PointF(80, 311),  new PointF(80, 357),  new PointF(83, 405),  new PointF(88, 454),  new PointF(96, 502),  new PointF(114, 546),
-                new PointF(144, 580), new PointF(180, 607), new PointF(226, 616), new PointF(278, 611), new PointF(335, 591), new PointF(391, 568),
-                new PointF(434, 531), new PointF(464, 486), new PointF(479, 433), new PointF(487, 377), new PointF(494, 321), new PointF(109, 259),
-                new PointF(126, 238), new PointF(154, 235), new PointF(183, 239), new PointF(212, 248), new PointF(283, 255), new PointF(321, 244),
-                new PointF(359, 240), new PointF(397, 247), new PointF(427, 271), new PointF(241, 298), new PointF(237, 327), new PointF(232, 354),
-                new PointF(227, 383), new PointF(201, 418), new PointF(215, 423), new PointF(230, 427), new PointF(250, 425), new PointF(270, 421),
-                new PointF(141, 301), new PointF(159, 293), new PointF(181, 294), new PointF(199, 309), new PointF(178, 313), new PointF(156, 311),
-                new PointF(309, 312), new PointF(331, 299), new PointF(355, 298), new PointF(376, 309), new PointF(356, 317), new PointF(331, 317),
-                new PointF(177, 503), new PointF(194, 484), new PointF(213, 473), new PointF(228, 477), new PointF(244, 474), new PointF(271, 488),
-                new PointF(299, 507), new PointF(271, 523), new PointF(244, 528), new PointF(226, 528), new PointF(209, 525), new PointF(192, 517),
-                new PointF(190, 500), new PointF(213, 489), new PointF(228, 491), new PointF(244, 491), new PointF(286, 504), new PointF(244, 508),
-                new PointF(228, 507), new PointF(211, 504), new PointF(538, 410), new PointF(215, 727), new PointF(0, 760),   new PointF(599, 597),
-                new PointF(0, 0),     new PointF(0, 400),   new PointF(0, 799),   new PointF(300, 799), new PointF(599, 799), new PointF(599, 400),
-                new PointF(599, 0),   new PointF(300, 0)
-            };
-            points1.Push(pts1);
-            points2.Push(pts2);
-
-
-
-            // Create an instance of Subdiv2D
-            Rectangle rect = new Rectangle(0, 0, img1.Size.Width, img1.Size.Height);
-            Subdiv2D subdiv = new Subdiv2D(rect);
-
-            // Create and Draw the Delaunay triangulation
-            triangleIndexes = new VectorOfVectorOfInt();
-            CreateDelaunay(ref img1, ref subdiv, ref points1, false, ref triangleIndexes);
-
-            // Draw the Delaunay triangulation of face 1
-            Mat img1D = img1.Clone();
-            DrawDelaunay(ref img1D, ref subdiv, new MCvScalar(255, 255, 255));
-
-
-            // Draw the Delaunay triangulation of face 2
-            Mat img2D = img2.Clone();
-            DrawDelaunay(ref img2D, ref points2, triangleIndexes, new MCvScalar(255, 255, 255));
-            img2D.ConvertTo(img2D, Emgu.CV.CvEnum.DepthType.Cv8U);
-
-
-
-
-
-            Console.WriteLine("test");
-
-            CreateMorph();
-        }
-
-        public void CreateMorph()
-        {
-
-            //compute weighted average point coordinates
-            pointsM = new VectorOfPointF();
-            for (int i = 0; i < points1.Size; i++)
-            {
-                float x = (1 - alpha) * points1[i].X + alpha * points2[i].X;
-                float y = (1 - alpha) * points1[i].Y + alpha * points2[i].Y;
-                PointF[] pf = { new PointF(x, y) };
-                pointsM.Push(pf);
-            }
-
-            //empty image for morphed face
-            Mat imgM = Mat.Zeros(img1.Rows, img1.Cols, Emgu.CV.CvEnum.DepthType.Cv32F, 3);
-
-            for (int i = 0; i < triangleIndexes.Size; i++)
-            {
-                VectorOfPointF t1 = new VectorOfPointF();
-                VectorOfPointF t2 = new VectorOfPointF();
-                VectorOfPointF tM = new VectorOfPointF();
-
-                PointF ppft10 = points1[triangleIndexes[i][0]];
-                PointF ppft11 = points1[triangleIndexes[i][1]];
-                PointF ppft12 = points1[triangleIndexes[i][2]];
-                PointF ppft20 = points2[triangleIndexes[i][0]];
-                PointF ppft21 = points2[triangleIndexes[i][1]];
-                PointF ppft22 = points2[triangleIndexes[i][2]];
-                PointF ppftM0 = pointsM[triangleIndexes[i][0]];
-                PointF ppftM1 = pointsM[triangleIndexes[i][1]];
-                PointF ppftM2 = pointsM[triangleIndexes[i][2]];
-
-                PointF[] pft10 = { new PointF(ppft10.X, ppft10.Y) };
-                PointF[] pft11 = { new PointF(ppft11.X, ppft11.Y) };
-                PointF[] pft12 = { new PointF(ppft12.X, ppft12.Y) };
-                PointF[] pft20 = { new PointF(ppft20.X, ppft20.Y) };
-                PointF[] pft21 = { new PointF(ppft21.X, ppft21.Y) };
-                PointF[] pft22 = { new PointF(ppft22.X, ppft22.Y) };
-                PointF[] pftM0 = { new PointF(ppftM0.X, ppftM0.Y) };
-                PointF[] pftM1 = { new PointF(ppftM1.X, ppftM1.Y) };
-                PointF[] pftM2 = { new PointF(ppftM2.X, ppftM2.Y) };
-
-                t1.Push(pft10);
-                t1.Push(pft11);
-                t1.Push(pft12);
-                t2.Push(pft20);
-                t2.Push(pft21);
-                t2.Push(pft22);
-                tM.Push(pftM0);
-                tM.Push(pftM1);
-                tM.Push(pftM2);
-
-                MorphTriangle(ref img1, ref img2, ref imgM, ref t1, ref t2, ref tM, alpha);
-            }
-            imgM.ConvertTo(imgM, Emgu.CV.CvEnum.DepthType.Cv8U);
-            CvInvoke.Imshow("Morphed Face", imgM);
-        }
-
-        private void SlValue_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            var newAlpha = e.NewValue;
-            this.alpha = (float)newAlpha;
-            CreateMorph();
-
-        }
+        
     }
 }

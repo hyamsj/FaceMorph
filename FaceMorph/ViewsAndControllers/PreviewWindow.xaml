@@ -22,10 +22,10 @@
                 <Label Content="Next Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <StackPanel>
-            <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
-                <Label x:Name="facesCount" Content=""></Label>  
+                <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
+                <Label x:Name="facesCountCurr" Content=""></Label>
             </StackPanel>
             <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click"/>
             <Button Width="50" Height="50" Click="DisplayFaceClicked">
@@ -33,6 +33,22 @@
             </Button>
             <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="ChangeFaceRightButton_Click"/>
         </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click"/>
+            <Button Width="50" Height="50" Click="DisplayFaceClicked">
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center" Text="Display Face"/>
+            </Button>
+            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="ChangeFaceRightButton_Click"/>
+            <StackPanel>
+                <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
+                <Label x:Name="facesCountRight" Content=""></Label>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+            <Button Width="80" Height="25" Content="Morph" Margin="10,0,10,0" Click="MorphButton_Click"/>
+            <Slider Width="120" Margin="10,10,10,10"/>
+        </StackPanel>
         
+
     </Grid>
 </Window>

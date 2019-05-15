@@ -60,8 +60,8 @@ namespace FaceMorph.ViewsAndControllers
         public const int RECT_WIDTH = 5;
         public const double HAAR_SCALE_FACTOR = 1.05;
         public const int HAAR_SCALE_MIN_NEIGHBOURS = 4;
-        System.Drawing.Size HAAR_MIN_SIZE = new System.Drawing.Size(30, 30); // todo: should be % of image pixel height and width
-        System.Drawing.Size HAAR_MAX_SIZE = new System.Drawing.Size(3000, 3000);
+        public const double HAAR_MIN_FACE_FACTOR = 0.3;
+        public const double HAAR_MAX_FACE_FACTOR = 0.8;
 
 
         private bool facesDetected = false;
@@ -76,6 +76,8 @@ namespace FaceMorph.ViewsAndControllers
 
             currImageI = new Image<Bgr, byte>(curr.Title);
             nextImageI = new Image<Bgr, byte>(next.Title);
+
+            DetectFaceInfo();
 
             InitializeComponent();
 
@@ -132,76 +134,100 @@ namespace FaceMorph.ViewsAndControllers
         {
             if (!facesDetected)
             {
-                DetectFaceInfo(); // todo: should be called earlier (not the drawing, but the detecting)
                 DrawFaceRectsCurr(facesListCurr);
                 DrawFaceRectsNext(facesListNext);
                 facesDetected = true;
-                facesCount.Content = $"{facesListCurr.Count}";
+                facesCountCurr.Content = $"{facesListCurr.Count}";
             }
-
         }
 
-        public void DetectFaceInfo() // todo: call earlier
+        public void DetectFaceInfo()
         {
-
+            string facePath;
             try
             {
                 // Detect Faces
-                string facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
-                CascadeClassifier classifierFace = new CascadeClassifier(facePath);
-                Image<Gray, byte> imgGrayCurr = currImageI.Convert<Gray, byte>().Clone();
-                Image<Gray, byte> imgGrayNext = nextImageI.Convert<Gray, byte>().Clone();
+                facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
 
-                facesArrCurr = classifierFace.DetectMultiScale(imgGrayCurr, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, HAAR_MIN_SIZE, HAAR_MAX_SIZE);
-                facesArrNext = classifierFace.DetectMultiScale(imgGrayNext, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, HAAR_MIN_SIZE, HAAR_MAX_SIZE);
-
-                facesListCurr = facesArrCurr.OfType<Rectangle>().ToList();
-                facesListNext = facesArrNext.OfType<Rectangle>().ToList();
-
-                //// Find facial feature points
-                VectorOfRect vrLeft = new VectorOfRect(facesArrCurr);
-                VectorOfRect vrRight = new VectorOfRect(facesArrNext);
-                landmarksNext = new VectorOfVectorOfPointF();
-                landmarksCurr = new VectorOfVectorOfPointF();
-
-                //// fill mat
-                currImageMat = CvInvoke.Imread(curr.Title);
-                nextImageMat = CvInvoke.Imread(next.Title);
+                // Prepare FFP
                 facemarkParam = new FacemarkLBFParams();
                 facemark = new FacemarkLBF(facemarkParam);
                 facemark.LoadModel(@"../../data/lbfmodel.yaml");
-                facemark.Fit(currImageMat, vrLeft, landmarksCurr);
-                facemark.Fit(nextImageMat, vrRight, landmarksNext);
-
-                ffpCurr = landmarksCurr[0];
-                ffpNext = landmarksNext[1]; // todo: user needs to be able to choose face
-
-                // Delaunay
-                using (VectorOfPointF vpfCurr = ffpCurr)
-                using (VectorOfPointF vpfNext = ffpNext)
-                {
-                    ptsCurr = vpfCurr.ToArray();
-                    ptsNext = vpfNext.ToArray();
-
-                    using (Subdiv2D subdivisionLeft = new Subdiv2D(ptsCurr))
-                    using (Subdiv2D subdivisionRight = new Subdiv2D(ptsNext))
-                    {
-                        //Obtain the delaunay's triangulation from the set of points;
-                        delaunayTrianglesCurr = subdivisionLeft.GetDelaunayTriangles();
-                        delaunayTrianglesNext = subdivisionRight.GetDelaunayTriangles();
-                    }
-                }
-
-                //DrawFFPCurr();
-                //DrawFFPNext();
-                DrawDelaunayCurr();
-                DrawDelaunayNext();
-
             }
+
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
+
+            CascadeClassifier classifierFace = new CascadeClassifier(facePath);
+            Image<Gray, byte> imgGrayCurr = currImageI.Convert<Gray, byte>().Clone();
+            Image<Gray, byte> imgGrayNext = nextImageI.Convert<Gray, byte>().Clone();
+
+
+            // defines size of face in picture to be found 
+            int minWidthCurr = (int)(currImageI.Width * HAAR_MIN_FACE_FACTOR);
+            int minHeightCurr = (int)(currImageI.Height * HAAR_MIN_FACE_FACTOR);
+            int maxWidthCurr = (int)(currImageI.Width * HAAR_MAX_FACE_FACTOR);
+            int maxHeightCurr = (int)(currImageI.Height * HAAR_MAX_FACE_FACTOR);
+
+            int minWidthNext = (int)(nextImageI.Width * HAAR_MIN_FACE_FACTOR);
+            int minWHeightNext = (int)(nextImageI.Height * HAAR_MIN_FACE_FACTOR);
+            int maxWidthNext = (int)(nextImageI.Width * HAAR_MAX_FACE_FACTOR);
+            int maxHeightNext = (int)(nextImageI.Height * HAAR_MAX_FACE_FACTOR);
+
+            System.Drawing.Size minSizeCurr = new System.Drawing.Size(minWidthCurr, minHeightCurr);
+            System.Drawing.Size maxSizeCurr = new System.Drawing.Size(maxWidthCurr, maxHeightCurr);
+
+            System.Drawing.Size minSizeNext = new System.Drawing.Size(minWidthNext, minWHeightNext);
+            System.Drawing.Size maxSizeNext = new System.Drawing.Size(maxWidthNext, maxHeightNext);
+
+            
+            facesArrCurr = classifierFace.DetectMultiScale(imgGrayCurr, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeCurr, maxSizeCurr);
+            facesArrNext = classifierFace.DetectMultiScale(imgGrayNext, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeNext, maxSizeNext);
+
+            facesListCurr = facesArrCurr.OfType<Rectangle>().ToList();
+            facesListNext = facesArrNext.OfType<Rectangle>().ToList();
+
+            // Find facial feature points
+            VectorOfRect vrLeft = new VectorOfRect(facesArrCurr);
+            VectorOfRect vrRight = new VectorOfRect(facesArrNext);
+            landmarksNext = new VectorOfVectorOfPointF();
+            landmarksCurr = new VectorOfVectorOfPointF();
+
+            // fill mat
+            currImageMat = CvInvoke.Imread(curr.Title);
+            nextImageMat = CvInvoke.Imread(next.Title);
+
+
+            facemark.Fit(currImageMat, vrLeft, landmarksCurr);
+            facemark.Fit(nextImageMat, vrRight, landmarksNext);
+
+            ffpCurr = landmarksCurr[0];
+            ffpNext = landmarksNext[0]; // todo: user needs to be able to choose face
+
+            // Delaunay
+            using (VectorOfPointF vpfCurr = ffpCurr)
+            using (VectorOfPointF vpfNext = ffpNext)
+            {
+                ptsCurr = vpfCurr.ToArray();
+                ptsNext = vpfNext.ToArray();
+
+                using (Subdiv2D subdivisionLeft = new Subdiv2D(ptsCurr))
+                using (Subdiv2D subdivisionRight = new Subdiv2D(ptsNext))
+                {
+                    //Obtain the delaunay's triangulation from the set of points;
+                    delaunayTrianglesCurr = subdivisionLeft.GetDelaunayTriangles();
+                    delaunayTrianglesNext = subdivisionRight.GetDelaunayTriangles();
+                }
+            }
+
+            //DrawFFPCurr();
+            //DrawFFPNext();
+            //DrawDelaunayCurr();
+            //DrawDelaunayNext();
+
+            //MorphImage m = new MorphImage(currImageMat, nextImageMat, ffpCurr, ffpNext);
         }
 
         public void DrawFaceRectsCurr(List<Rectangle> facesList)
@@ -267,7 +293,7 @@ namespace FaceMorph.ViewsAndControllers
         {
             Image<Bgr, byte> myImage = currImageMat.ToImage<Bgr, byte>();
             FaceInvoke.DrawFacemarks(myImage, ffpCurr, new MCvScalar(255, 0, 0));
-            CvInvoke.Imwrite("testffp.jpg", myImage);
+            //CvInvoke.Imwrite("testffp.jpg", myImage);
             currImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
         }
 
@@ -275,7 +301,7 @@ namespace FaceMorph.ViewsAndControllers
         {
             Image<Bgr, byte> myImage = nextImageMat.ToImage<Bgr, byte>();
             FaceInvoke.DrawFacemarks(myImage, ffpNext, new MCvScalar(255, 0, 0));
-            CvInvoke.Imwrite("testffp.jpg", myImage);
+            //CvInvoke.Imwrite("testffp.jpg", myImage);
             nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
         }
 
@@ -309,6 +335,11 @@ namespace FaceMorph.ViewsAndControllers
                 }
             }
             nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
+        }
+
+        private void MorphButton_Click(object sender, RoutedEventArgs e)
+        {
+            MorphImage m = new MorphImage(currImageMat, nextImageMat, ffpCurr, ffpNext);
         }
 
         private void ChangeFaceLeftButton_Click(object sender, RoutedEventArgs e)
