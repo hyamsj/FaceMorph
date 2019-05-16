@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FaceMorph.ViewsAndControllers"
         mc:Ignorable="d"
-        Title="PreviewWindow" Height="450" Width="800">
+        Title="PreviewWindow" Height="900" Width="1600"  WindowStartupLocation="CenterScreen">
     <Grid>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
             <StackPanel>
                 <!--<Image Uid="{Binding Id}" Source="{Binding ImageData}" Width="200"/>-->
                 <Image Width="200" Height="250" x:Name="currImage" Source="{Binding CurrImage}"/>
@@ -27,26 +27,27 @@
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
                 <Label x:Name="facesCountCurr" Content=""></Label>
             </StackPanel>
-            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click" x:Uid="leftButtonCurr"/>
             <Button Width="50" Height="50" Click="DisplayFaceClicked">
                 <TextBlock TextWrapping="Wrap" TextAlignment="Center" Text="Display Face"/>
             </Button>
-            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="ChangeFaceRightButton_Click"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="ChangeFaceRightButton_Click" x:Uid="rightButtonCurr"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click" x:Uid="leftButtonNext"/>
             <Button Width="50" Height="50" Click="DisplayFaceClicked">
                 <TextBlock TextWrapping="Wrap" TextAlignment="Center" Text="Display Face"/>
             </Button>
-            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="ChangeFaceRightButton_Click"/>
+            <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" Click="ChangeFaceRightButton_Click" x:Uid="rightButtonNext"/>
             <StackPanel>
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
-                <Label x:Name="facesCountRight" Content=""></Label>
+                <Label x:Name="facesCountNext" Content=""></Label>
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-            <Button Width="80" Height="25" Content="Morph" Margin="10,0,10,0" Click="MorphButton_Click"/>
-            <Slider Width="120" Margin="10,10,10,10"/>
+            <Button Width="80" Height="25" Content="Morph" Margin="10,0,10,0" Click="MorphButton_Click" x:Name="morphBtn"/>
+            <Slider Width="120" Margin="10,10,10,10" ValueChanged="Slider_ValueChanged" x:Name="mySlider" Minimum="0" Maximum="1" IsSnapToTickEnabled="True" TickFrequency="0.05" TickPlacement="BottomRight"/>
+            <!--<Slider Width="200" Maximum="1" TickPlacement="BottomRight" TickFrequency="0.1" IsSnapToTickEnabled="True" Name="slValue" ValueChanged="SlValue_ValueChanged"/>-->
         </StackPanel>
         
 

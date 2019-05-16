@@ -234,6 +234,8 @@ namespace MorphPrototype
         {
             InitializeComponent();
 
+
+
             // Read input images
             img1 = CvInvoke.Imread($"../../hillary_clinton.jpg");
             img2 = CvInvoke.Imread($"../../donald_trump.jpg");

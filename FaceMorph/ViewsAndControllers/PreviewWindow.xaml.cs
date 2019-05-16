@@ -55,7 +55,7 @@ namespace FaceMorph.ViewsAndControllers
         Triangle2DF[] delaunayTrianglesCurr, delaunayTrianglesNext;
         PointF[] ptsCurr, ptsNext;
 
-
+        float defaultAlpha = 0;
 
         public const int RECT_WIDTH = 5;
         public const double HAAR_SCALE_FACTOR = 1.05;
@@ -74,12 +74,20 @@ namespace FaceMorph.ViewsAndControllers
             this.curr = imageDetails;
             DisplayImages();
 
-            currImageI = new Image<Bgr, byte>(curr.Title);
-            nextImageI = new Image<Bgr, byte>(next.Title);
 
-            DetectFaceInfo();
-
-            InitializeComponent();
+            if (next != null)
+            {
+                currImageI = new Image<Bgr, byte>(curr.Title);
+                nextImageI = new Image<Bgr, byte>(next.Title);
+                DetectFaceInfo();
+                InitializeComponent();
+            }
+            else
+            {
+                InitializeComponent();
+                morphBtn.IsEnabled = false;
+                mySlider.IsEnabled = false;
+            }
 
         }
 
@@ -132,12 +140,18 @@ namespace FaceMorph.ViewsAndControllers
 
         private void DisplayFaceClicked(object sender, RoutedEventArgs e)
         {
-            if (!facesDetected)
+            if (next == null)
             {
-                DrawFaceRectsCurr(facesListCurr);
+                facesCountCurr.Content = $"Nothing to morph";
+            }
+            else if (!facesDetected)
+            {
+                DrawFaceRectsCurr(facesListCurr); // todo cleanup
                 DrawFaceRectsNext(facesListNext);
                 facesDetected = true;
                 facesCountCurr.Content = $"{facesListCurr.Count}";
+                facesCountNext.Content = $"{facesListNext.Count}";
+
             }
         }
 
@@ -146,10 +160,10 @@ namespace FaceMorph.ViewsAndControllers
             string facePath;
             try
             {
-                // Detect Faces
+                // get face detect dataset
                 facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
 
-                // Prepare FFP
+                // get FFP dataset
                 facemarkParam = new FacemarkLBFParams();
                 facemark = new FacemarkLBF(facemarkParam);
                 facemark.LoadModel(@"../../data/lbfmodel.yaml");
@@ -182,7 +196,8 @@ namespace FaceMorph.ViewsAndControllers
             System.Drawing.Size minSizeNext = new System.Drawing.Size(minWidthNext, minWHeightNext);
             System.Drawing.Size maxSizeNext = new System.Drawing.Size(maxWidthNext, maxHeightNext);
 
-            
+
+            // Detect Faces
             facesArrCurr = classifierFace.DetectMultiScale(imgGrayCurr, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeCurr, maxSizeCurr);
             facesArrNext = classifierFace.DetectMultiScale(imgGrayNext, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeNext, maxSizeNext);
 
@@ -226,65 +241,73 @@ namespace FaceMorph.ViewsAndControllers
             //DrawFFPNext();
             //DrawDelaunayCurr();
             //DrawDelaunayNext();
-
-            //MorphImage m = new MorphImage(currImageMat, nextImageMat, ffpCurr, ffpNext);
         }
 
         public void DrawFaceRectsCurr(List<Rectangle> facesList)
         {
-            if (facesList.Count > 0)
+            if (facesList != null)
             {
-                for (int i = 0; i < facesList.Count; i++)
+                if (facesList.Count > 0)
                 {
-                    Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
-                    if (i == 0)
+                    for (int i = 0; i < facesList.Count; i++)
                     {
-                        currImageI.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
-                        currentFaceCurr = i;
-                    }
-                    else if (i > 0)
-                    {
-                        currImageI.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
+                        Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
+                        if (i == 0)
+                        {
+                            currImageI.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
+                            currentFaceCurr = i;
+                        }
+                        else if (i > 0)
+                        {
+                            currImageI.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
+                        }
+
                     }
 
                 }
+                PreviewImageHolder updatedImage = new PreviewImageHolder
+                {
+                    CurrImage = BitmapSourceConvert.ToBitmapSource(currImageI),
+                };
+
+                currImage.DataContext = updatedImage;
 
             }
-            PreviewImageHolder updatedImage = new PreviewImageHolder
-            {
-                CurrImage = BitmapSourceConvert.ToBitmapSource(currImageI),
-            };
-
-            currImage.DataContext = updatedImage;
 
         }
 
         public void DrawFaceRectsNext(List<Rectangle> facesList)
         {
-            if (facesList.Count > 0)
+            if (facesList != null)
             {
-                for (int i = 0; i < facesList.Count; i++)
+                if (facesList.Count > 0)
                 {
-                    Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
-                    if (i == 0)
+                    for (int i = 0; i < facesList.Count; i++)
                     {
-                        nextImageI.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
-                        currentFaceNext = i;
-                    }
-                    else if (i > 0)
-                    {
-                        nextImageI.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
+                        Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
+                        if (i == 0)
+                        {
+                            // draw green rect
+                            nextImageI.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
+                            currentFaceNext = i;
+                        }
+                        else if (i > 0)
+                        {
+                            // draw red rect
+                            nextImageI.Draw(facesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
+                        }
+
                     }
 
                 }
+                PreviewImageHolder updatedImage = new PreviewImageHolder
+                {
+                    NextImage = BitmapSourceConvert.ToBitmapSource(nextImageI),
+                };
+
+                nextImage.DataContext = updatedImage;
 
             }
-            PreviewImageHolder updatedImage = new PreviewImageHolder
-            {
-                NextImage = BitmapSourceConvert.ToBitmapSource(nextImageI),
-            };
-
-            nextImage.DataContext = updatedImage;
 
             //CvInvoke.Imwrite("test.jpg",currImageI);
         }
@@ -339,77 +362,208 @@ namespace FaceMorph.ViewsAndControllers
 
         private void MorphButton_Click(object sender, RoutedEventArgs e)
         {
-            MorphImage m = new MorphImage(currImageMat, nextImageMat, ffpCurr, ffpNext);
+            MorphImage m = new MorphImage(currImageMat, nextImageMat, ffpCurr, ffpNext, defaultAlpha);
+
+            morphImage.Source = m.GetMorphedImage();
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            double sliderValue = mySlider.Value;
+            float updatedAlpha = (float)sliderValue;
+            MorphImage m = new MorphImage(currImageMat, nextImageMat, ffpCurr, ffpNext, updatedAlpha);
+            morphImage.Source = m.GetMorphedImage();
         }
 
         private void ChangeFaceLeftButton_Click(object sender, RoutedEventArgs e)
         {
-            if (facesDetected)
+            string buttonName = ((Button)sender).Uid;
+            Console.WriteLine(buttonName);
+
+            switch ((sender as Button).Uid)
             {
-                if (facesListCurr.Count > 1)
-                {
-                    if (currentFaceCurr == 0)
+                case "leftButtonCurr":
+
+                    if (facesDetected)
                     {
-                        currentFaceCurr = facesListCurr.Count - 1;
-                        RedrawFaces();
+                        if (facesListCurr.Count > 1)
+                        {
+                            if (currentFaceCurr == 0)
+                            {
+                                currentFaceCurr = facesListCurr.Count - 1;
+                                RedrawFaces(curr.Title, false);
+                            }
+                            else
+                            {
+                                currentFaceCurr--;
+                                RedrawFaces(curr.Title, false);
+                            }
+                        }
                     }
-                    else
+                    break;
+                case "leftButtonNext":
+                    if (facesDetected)
                     {
-                        currentFaceCurr--;
-                        RedrawFaces();
+                        if (facesListNext.Count > 1)
+                        {
+                            if (currentFaceNext == 0)
+                            {
+                                currentFaceNext = facesListNext.Count - 1;
+                                RedrawFaces(next.Title, true);
+                            }
+                            else
+                            {
+                                currentFaceNext--;
+                                RedrawFaces(next.Title, true);
+                            }
+                        }
                     }
-                }
+                    break;
+                default:
+                    break;
             }
+
+
 
         }
 
         private void ChangeFaceRightButton_Click(object sender, RoutedEventArgs e)
         {
-            if (facesDetected)
+            //if (facesDetected)
+            //{
+            //    if (facesListCurr.Count > 1)
+            //    {
+            //        if (currentFaceCurr == facesListCurr.Count - 1)
+            //        {
+            //            currentFaceCurr = 0;
+            //            //RedrawFaces();
+            //        }
+            //        else
+            //        {
+            //            currentFaceCurr++;
+            //            //RedrawFaces();
+            //        }
+            //    }
+            //}
+
+            string buttonName = ((Button)sender).Uid;
+            Console.WriteLine(buttonName);
+
+            switch ((sender as Button).Uid)
             {
-                if (facesListCurr.Count > 1)
-                {
-                    if (currentFaceCurr == facesListCurr.Count - 1)
+                case "rightButtonCurr":
+
+                    if (facesDetected)
                     {
-                        currentFaceCurr = 0;
-                        RedrawFaces();
+                        if (facesListCurr.Count > 1)
+                        {
+                            if (currentFaceCurr == facesListCurr.Count - 1)
+                            {
+                                currentFaceCurr = 0;
+                                RedrawFaces(curr.Title, false);
+                            }
+                            else
+                            {
+                                currentFaceCurr++;
+                                RedrawFaces(curr.Title, false);
+                            }
+                        }
                     }
-                    else
+                    break;
+                case "rightButtonNext":
+                    if (facesDetected)
                     {
-                        currentFaceCurr++;
-                        RedrawFaces();
+                        if (facesListNext.Count > 1)
+                        {
+                            if (currentFaceNext == facesListNext.Count - 1)
+                            {
+                                currentFaceNext = 0;
+                                RedrawFaces(next.Title, true);
+                            }
+                            else
+                            {
+                                currentFaceNext++;
+                                RedrawFaces(next.Title, true);
+                            }
+                        }
                     }
-                }
+                    break;
+                default:
+                    break;
             }
         }
 
-        public void RedrawFaces()
+        /// <summary>
+        /// imgLocation: false for left/curr, true for right/next
+        /// </summary>
+        /// <param name="imgName"></param>
+        /// <param name="imgLocation"></param>
+        public void RedrawFaces(string imgName, bool imgLocation)
         {
 
-            currImageI = new Image<Bgr, byte>(curr.Title);
+            int tmpcurrentFace = 0;
+            List<Rectangle> tmpfacesList;
+            Image<Bgr, byte> tmpImageI;
 
-            if (facesListCurr.Count > 0)
+            if (!imgLocation) // true -> curr // false -> next
             {
-                for (int i = 0; i < facesListCurr.Count; i++)
+                tmpcurrentFace = currentFaceCurr;
+                tmpfacesList = facesListCurr;
+                tmpImageI = new Image<Bgr, byte>(imgName);
+            }
+            else
+            {
+                tmpcurrentFace = currentFaceNext;
+                tmpfacesList = facesListNext;
+                tmpImageI = new Image<Bgr, byte>(imgName);
+            }
+
+
+            if (tmpfacesList.Count > 0)
+            {
+                for (int i = 0; i < tmpfacesList.Count; i++)
                 {
-                    if (i == currentFaceCurr)
+                    if (i == tmpcurrentFace)
                     {
-                        currImageI.Draw(facesListCurr[i], new Bgr(0, 255, 0), RECT_WIDTH);
+                        tmpImageI.Draw(tmpfacesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
                     }
-                    else if (i != currentFaceCurr)
+                    else if (i != tmpcurrentFace)
                     {
-                        currImageI.Draw(facesListCurr[i], new Bgr(0, 0, 255), RECT_WIDTH);
+                        tmpImageI.Draw(tmpfacesList[i], new Bgr(0, 0, 255), RECT_WIDTH);
                     }
 
                 }
 
             }
-            PreviewImageHolder updatedImage = new PreviewImageHolder
+
+            if (!imgLocation)
             {
-                CurrImage = BitmapSourceConvert.ToBitmapSource(currImageI),
-            };
-            currImage.DataContext = updatedImage;
-            curr.FaceLocation = facesListCurr[currentFaceCurr];
+                PreviewImageHolder updatedImage = new PreviewImageHolder
+                {
+                    CurrImage = BitmapSourceConvert.ToBitmapSource(tmpImageI),
+                };
+                currImage.DataContext = updatedImage;
+                curr.FaceLocation = facesListCurr[tmpcurrentFace];
+
+
+                currentFaceCurr = tmpcurrentFace;
+                facesListCurr = tmpfacesList;
+                currImageI = tmpImageI;
+            }
+            else
+            {
+                PreviewImageHolder updatedImage = new PreviewImageHolder
+                {
+                    NextImage = BitmapSourceConvert.ToBitmapSource(tmpImageI),
+                };
+                nextImage.DataContext = updatedImage;
+                next.FaceLocation = facesListNext[tmpcurrentFace];
+
+                currentFaceNext = tmpcurrentFace;
+                facesListNext = tmpfacesList;
+                nextImageI = tmpImageI;
+                
+            }
 
         }
 

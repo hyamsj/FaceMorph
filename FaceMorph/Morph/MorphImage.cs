@@ -19,6 +19,7 @@ namespace FaceMorph.Helpers
 
         Mat img1 = new Mat();
         Mat img2 = new Mat();
+        Mat imgM; 
 
         VectorOfVectorOfInt triangleIndexes = new VectorOfVectorOfInt();
 
@@ -26,13 +27,21 @@ namespace FaceMorph.Helpers
         VectorOfPointF points2 = new VectorOfPointF();
         VectorOfPointF pointsM = new VectorOfPointF();
 
-        public MorphImage(Mat img1, Mat img2, VectorOfPointF points1, VectorOfPointF points2)
+        public MorphImage(Mat img1, Mat img2, VectorOfPointF points1, VectorOfPointF points2, float alpha)
         {
+            this.img1 = img1;
+            this.img2 = img2;
+            this.alpha = alpha;
+
             img1.ConvertTo(img1, Emgu.CV.CvEnum.DepthType.Cv32F);
             img2.ConvertTo(img2, Emgu.CV.CvEnum.DepthType.Cv32F);
 
             this.points1 = points1;
             this.points2 = points2;
+
+            // Add Points for whole image
+            points1 = AddCornerPoints(points1, img1);
+            points2 = AddCornerPoints(points2, img2);
 
             // Create an instance of Subdiv2D
             Rectangle rect = new Rectangle(0, 0, img1.Size.Width, img1.Size.Height);
@@ -63,7 +72,7 @@ namespace FaceMorph.Helpers
             }
 
             //empty image for morphed face
-            Mat imgM = Mat.Zeros(img1.Rows, img1.Cols, Emgu.CV.CvEnum.DepthType.Cv32F, 3);
+            imgM = Mat.Zeros(img1.Rows, img1.Cols, Emgu.CV.CvEnum.DepthType.Cv32F, 3);
 
             for (int i = 0; i < triangleIndexes.Size; i++)
             {
@@ -104,9 +113,11 @@ namespace FaceMorph.Helpers
                 MorphTriangle(ref img1, ref img2, ref imgM, ref t1, ref t2, ref tM, alpha);
             }
             imgM.ConvertTo(imgM, Emgu.CV.CvEnum.DepthType.Cv8U);
-            CvInvoke.Imshow("Morphed Face", imgM);
+            //CvInvoke.Imshow("Morphed Face", imgM);
 
         }
+
+        
 
 
         // Draws the Delaunay triangualtion into an image using the Subdiv2D
@@ -302,11 +313,60 @@ namespace FaceMorph.Helpers
 
             // Add morphed triangle to target image
             CvInvoke.Add(tmp, imgRect, tmp); // img(rM) = tmp;
-            var x = new Mat(imgM, rM);
+            Mat x = new Mat(imgM, rM);
             tmp.CopyTo(x);
-
         }
 
-        
+        public System.Windows.Media.Imaging.BitmapSource GetMorphedImage()
+        {
+            Image<Bgr, byte> imgMI = this.imgM.ToImage<Bgr, byte>();
+            System.Windows.Media.Imaging.BitmapSource imgMBitMap = BitmapSourceConvert.ToBitmapSource(imgMI);
+            return imgMBitMap;
+        }
+
+        private VectorOfPointF AddCornerPoints(VectorOfPointF points, Mat img)
+        {
+            int width = img.Width;
+            int height = img.Height;
+
+            // top left
+            PointF[] p0 = { new PointF(0,0) };
+            points.Push(p0); 
+
+            // top center
+            PointF[] p1 = { new PointF((width / 2) - 1, 0 ) };
+            points.Push(p1);
+
+            // top right
+            PointF[] p2 = { new PointF(width - 1, 0) };
+            points.Push(p2);
+
+            // center right
+            PointF[] p3 = { new PointF(width - 1, (height / 2) - 1) };
+            points.Push(p3);
+
+            // bottom right
+            PointF[] p4 = { new PointF(width - 1, height - 1) };
+            points.Push(p4);
+
+            // bottom center
+            PointF[] p5 = { new PointF(width - 1, height - 1) };
+            points.Push(p5);
+
+            // bottom left
+            PointF[] p6 = { new PointF(0, height - 1) };
+            points.Push(p6);
+
+            //center left
+            PointF[] p7 = { new PointF(0, (height / 2) - 1) };
+            points.Push(p7);
+
+
+            return points;
+
+            
+        }
+
+
     }
 }
