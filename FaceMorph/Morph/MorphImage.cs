@@ -19,7 +19,7 @@ namespace FaceMorph.Helpers
 
         Mat img1 = new Mat();
         Mat img2 = new Mat();
-        Mat imgM; 
+        Mat imgM;
 
         VectorOfVectorOfInt triangleIndexes = new VectorOfVectorOfInt();
 
@@ -72,7 +72,26 @@ namespace FaceMorph.Helpers
             }
 
             //empty image for morphed face
-            imgM = Mat.Zeros(img1.Rows, img1.Cols, Emgu.CV.CvEnum.DepthType.Cv32F, 3);
+            int rowsM, colsM;
+            if (img1.Cols >= img2.Cols)
+            {
+                colsM = img1.Cols;
+            }
+            else
+            {
+                colsM = img2.Cols;
+            }
+            if (img1.Rows >= img2.Rows)
+            {
+                rowsM = img1.Rows;
+            }
+            else
+            {
+                rowsM = img2.Rows;
+            }
+
+
+            imgM = Mat.Zeros(rowsM, colsM, Emgu.CV.CvEnum.DepthType.Cv32F, 3);
 
             for (int i = 0; i < triangleIndexes.Size; i++)
             {
@@ -117,7 +136,7 @@ namespace FaceMorph.Helpers
 
         }
 
-        
+
 
 
         // Draws the Delaunay triangualtion into an image using the Subdiv2D
@@ -330,11 +349,11 @@ namespace FaceMorph.Helpers
             int height = img.Height;
 
             // top left
-            PointF[] p0 = { new PointF(0,0) };
-            points.Push(p0); 
+            PointF[] p0 = { new PointF(0, 0) };
+            points.Push(p0);
 
             // top center
-            PointF[] p1 = { new PointF((width / 2) - 1, 0 ) };
+            PointF[] p1 = { new PointF((width / 2) - 1, 0) };
             points.Push(p1);
 
             // top right
@@ -364,7 +383,7 @@ namespace FaceMorph.Helpers
 
             return points;
 
-            
+
         }
 
 

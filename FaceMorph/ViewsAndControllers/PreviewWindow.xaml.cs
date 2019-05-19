@@ -174,6 +174,34 @@ namespace FaceMorph.ViewsAndControllers
                 throw new Exception(ex.Message);
             }
 
+            // initialize imageMat
+            currImageMat = currImageI.Mat;
+            nextImageMat = nextImageI.Mat;
+
+            // resize image
+            System.Drawing.Size currImageSize = new System.Drawing.Size(currImageI.Width, currImageI.Height);
+            System.Drawing.Size nextImageSize = new System.Drawing.Size(nextImageI.Width, nextImageI.Height);
+
+            if (currImageSize.Height > nextImageSize.Height || currImageSize.Width > nextImageSize.Width)
+            {
+
+                var tmp = currImageI.Mat; // unnecessary copy
+                currImageMat = GetSquareImage(tmp, nextImageI.Width);
+                currImageI = currImageMat.ToImage<Bgr, byte>();
+                //CvInvoke.Resize(currImageI, currImageI, nextImageSize);
+                //CvInvoke.Imwrite("testimages/currImageIResized.jpg", currImageMat);
+
+            }
+            else
+            {
+                var tmp = nextImageI.Mat; // unnecessary copy
+                nextImageMat = GetSquareImage(tmp, currImageI.Width);
+                nextImageI = nextImageMat.ToImage<Bgr, byte>();
+                //CvInvoke.Resize(nextImageI, nextImageI, currImageSize);
+                //CvInvoke.Imwrite("testimages/nextImageIresized.jpg", nextImageMat);
+            }
+
+
             CascadeClassifier classifierFace = new CascadeClassifier(facePath);
             Image<Gray, byte> imgGrayCurr = currImageI.Convert<Gray, byte>().Clone();
             Image<Gray, byte> imgGrayNext = nextImageI.Convert<Gray, byte>().Clone();
@@ -201,46 +229,92 @@ namespace FaceMorph.ViewsAndControllers
             facesArrCurr = classifierFace.DetectMultiScale(imgGrayCurr, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeCurr, maxSizeCurr);
             facesArrNext = classifierFace.DetectMultiScale(imgGrayNext, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeNext, maxSizeNext);
 
-            facesListCurr = facesArrCurr.OfType<Rectangle>().ToList();
-            facesListNext = facesArrNext.OfType<Rectangle>().ToList();
+            // if no faces found, send error to user
+            if (facesArrCurr != null)
+            {
+                facesListCurr = facesArrCurr.OfType<Rectangle>().ToList();
 
-            // Find facial feature points
-            VectorOfRect vrLeft = new VectorOfRect(facesArrCurr);
-            VectorOfRect vrRight = new VectorOfRect(facesArrNext);
-            landmarksNext = new VectorOfVectorOfPointF();
-            landmarksCurr = new VectorOfVectorOfPointF();
+                // Find facial feature points
+                VectorOfRect vrLeft = new VectorOfRect(facesArrCurr);
+                landmarksCurr = new VectorOfVectorOfPointF();
 
-            // fill mat
-            currImageMat = CvInvoke.Imread(curr.Title);
-            nextImageMat = CvInvoke.Imread(next.Title);
+                // fill mat
+                //currImageMat = CvInvoke.Imread(curr.Title);
+
+                facemark.Fit(currImageMat, vrLeft, landmarksCurr); // ?
+                ffpCurr = landmarksCurr[0];
+
+            }
+            if (facesArrNext != null)
+            {
+                facesListNext = facesArrNext.OfType<Rectangle>().ToList();
+
+                // Find facial feature points
+                VectorOfRect vrRight = new VectorOfRect(facesArrNext);
+                landmarksNext = new VectorOfVectorOfPointF();
+
+                // fill mat
+                //nextImageMat = CvInvoke.Imread(next.Title);
+
+                facemark.Fit(nextImageMat, vrRight, landmarksNext);
+                ffpNext = landmarksNext[0]; // todo: user needs to be able to choose face
+            }
 
 
-            facemark.Fit(currImageMat, vrLeft, landmarksCurr);
-            facemark.Fit(nextImageMat, vrRight, landmarksNext);
-
-            ffpCurr = landmarksCurr[0];
-            ffpNext = landmarksNext[0]; // todo: user needs to be able to choose face
 
             // Delaunay
-            using (VectorOfPointF vpfCurr = ffpCurr)
-            using (VectorOfPointF vpfNext = ffpNext)
+            if (facesArrNext != null && facesArrCurr != null)
             {
-                ptsCurr = vpfCurr.ToArray();
-                ptsNext = vpfNext.ToArray();
-
-                using (Subdiv2D subdivisionLeft = new Subdiv2D(ptsCurr))
-                using (Subdiv2D subdivisionRight = new Subdiv2D(ptsNext))
+                using (VectorOfPointF vpfCurr = ffpCurr)
+                using (VectorOfPointF vpfNext = ffpNext)
                 {
-                    //Obtain the delaunay's triangulation from the set of points;
-                    delaunayTrianglesCurr = subdivisionLeft.GetDelaunayTriangles();
-                    delaunayTrianglesNext = subdivisionRight.GetDelaunayTriangles();
+                    ptsCurr = vpfCurr.ToArray();
+                    ptsNext = vpfNext.ToArray();
+
+                    using (Subdiv2D subdivisionLeft = new Subdiv2D(ptsCurr))
+                    using (Subdiv2D subdivisionRight = new Subdiv2D(ptsNext))
+                    {
+                        //Obtain the delaunay's triangulation from the set of points;
+                        delaunayTrianglesCurr = subdivisionLeft.GetDelaunayTriangles();
+                        delaunayTrianglesNext = subdivisionRight.GetDelaunayTriangles();
+                    }
                 }
+
             }
 
             //DrawFFPCurr();
             //DrawFFPNext();
             //DrawDelaunayCurr();
             //DrawDelaunayNext();
+        }
+
+        
+        private Mat GetSquareImage(Mat img, int targetWidth)
+        {
+            int width = img.Cols;
+            int height = img.Rows;
+
+            Mat square = Mat.Zeros(targetWidth,targetWidth,Emgu.CV.CvEnum.DepthType.Cv8U,3);
+
+            int maxDim = (width >= height) ? width : height;
+            float scale = ((float)targetWidth)/maxDim;
+            Rectangle roi = new Rectangle();
+            if (width >=height)
+            {
+                roi.Width = targetWidth;
+                roi.X = 0;
+                roi.Height = (int)(height * scale);
+                roi.Y = (targetWidth - roi.Height) / 2;
+            } else
+            {
+                roi.Y = 0;
+                roi.Height = targetWidth;
+                roi.Width = (int)(width * scale);
+                roi.X = (targetWidth - roi.Width) / 2;
+            }
+            CvInvoke.Resize(img, square,roi.Size);
+            return square;
+            
         }
 
         public void DrawFaceRectsCurr(List<Rectangle> facesList)
@@ -362,6 +436,8 @@ namespace FaceMorph.ViewsAndControllers
 
         private void MorphButton_Click(object sender, RoutedEventArgs e)
         {
+            CvInvoke.Imwrite("testimages/morpph1.jpg", currImageMat);
+            CvInvoke.Imwrite("testimages/morpph2.jpg", nextImageMat);
             MorphImage m = new MorphImage(currImageMat, nextImageMat, ffpCurr, ffpNext, defaultAlpha);
 
             morphImage.Source = m.GetMorphedImage();
@@ -562,7 +638,7 @@ namespace FaceMorph.ViewsAndControllers
                 currentFaceNext = tmpcurrentFace;
                 facesListNext = tmpfacesList;
                 nextImageI = tmpImageI;
-                
+
             }
 
         }
