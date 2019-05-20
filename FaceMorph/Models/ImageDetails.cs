@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Emgu.CV;
+using Emgu.CV.Structure;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -22,6 +24,8 @@ namespace FaceMorph
         private bool _isSelected = false;
         private bool _toDelete = false;
         private System.Drawing.Rectangle _faceLocation;
+        private int _selectedFace;
+        private Image<Bgr, byte> _resizedImage;
 
 
         public System.Drawing.Rectangle FaceLocation
@@ -83,6 +87,9 @@ namespace FaceMorph
             }
         }
 
+        public int SelectedFace { get => _selectedFace; set => _selectedFace = value; }
+
+        public Image<Bgr, byte> ResizedImage { get => _resizedImage; set => _resizedImage = value; }
 
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {

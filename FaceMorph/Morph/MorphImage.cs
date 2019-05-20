@@ -27,11 +27,14 @@ namespace FaceMorph.Helpers
         VectorOfPointF points2 = new VectorOfPointF();
         VectorOfPointF pointsM = new VectorOfPointF();
 
-        public MorphImage(Mat img1, Mat img2, VectorOfPointF points1, VectorOfPointF points2, float alpha)
+        //public MorphImage(Mat img1, Mat img2, VectorOfPointF points1, VectorOfPointF points2, float alpha)
+        public MorphImage(ImageDetails imgdet1, ImageDetails imgdet2, VectorOfPointF points1, VectorOfPointF points2, float alpha)
         {
-            this.img1 = img1;
-            this.img2 = img2;
+
+            this.img1 = imgdet1.ResizedImage.Mat;
+            this.img2 = imgdet2.ResizedImage.Mat;
             this.alpha = alpha;
+            CvInvoke.Imwrite("testimages/morph.jpg", img1);
 
             img1.ConvertTo(img1, Emgu.CV.CvEnum.DepthType.Cv32F);
             img2.ConvertTo(img2, Emgu.CV.CvEnum.DepthType.Cv32F);
@@ -40,7 +43,7 @@ namespace FaceMorph.Helpers
             this.points2 = points2;
 
             // Add Points for whole image
-            points1 = AddCornerPoints(points1, img1);
+            points1 = AddCornerPoints(points1, img1); // todo: corner points get added twice
             points2 = AddCornerPoints(points2, img2);
 
             // Create an instance of Subdiv2D
@@ -345,42 +348,45 @@ namespace FaceMorph.Helpers
 
         private VectorOfPointF AddCornerPoints(VectorOfPointF points, Mat img)
         {
-            int width = img.Width;
-            int height = img.Height;
+            if (points.Size < 76)
+            {
+                int width = img.Width;
+                int height = img.Height;
 
-            // top left
-            PointF[] p0 = { new PointF(0, 0) };
-            points.Push(p0);
+                // top left
+                PointF[] p0 = { new PointF(0, 0) };
+                points.Push(p0);
 
-            // top center
-            PointF[] p1 = { new PointF((width / 2) - 1, 0) };
-            points.Push(p1);
+                // top center
+                PointF[] p1 = { new PointF((width / 2) - 1, 0) };
+                points.Push(p1);
 
-            // top right
-            PointF[] p2 = { new PointF(width - 1, 0) };
-            points.Push(p2);
+                // top right
+                PointF[] p2 = { new PointF(width - 1, 0) };
+                points.Push(p2);
 
-            // center right
-            PointF[] p3 = { new PointF(width - 1, (height / 2) - 1) };
-            points.Push(p3);
+                // center right
+                PointF[] p3 = { new PointF(width - 1, (height / 2) - 1) };
+                points.Push(p3);
 
-            // bottom right
-            PointF[] p4 = { new PointF(width - 1, height - 1) };
-            points.Push(p4);
+                // bottom right
+                PointF[] p4 = { new PointF(width - 1, height - 1) };
+                points.Push(p4);
 
-            // bottom center
-            PointF[] p5 = { new PointF(width - 1, height - 1) };
-            points.Push(p5);
+                // bottom center
+                PointF[] p5 = { new PointF(width - 1, height - 1) };
+                points.Push(p5);
 
-            // bottom left
-            PointF[] p6 = { new PointF(0, height - 1) };
-            points.Push(p6);
+                // bottom left
+                PointF[] p6 = { new PointF(0, height - 1) };
+                points.Push(p6);
 
-            //center left
-            PointF[] p7 = { new PointF(0, (height / 2) - 1) };
-            points.Push(p7);
+                //center left
+                PointF[] p7 = { new PointF(0, (height / 2) - 1) };
+                points.Push(p7);
 
 
+            }
             return points;
 
 

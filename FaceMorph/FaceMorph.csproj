@@ -74,6 +74,7 @@
     </ApplicationDefinition>
     <Compile Include="EmguTester.cs" />
     <Compile Include="Helpers\BitmapSourceConvert.cs" />
+    <Compile Include="Helpers\ImageEnum.cs" />
     <Compile Include="Morph\ImagePreprocessor.cs" />
     <Compile Include="Morph\MorphImage.cs" />
     <Compile Include="Helpers\PreviewImageHolder.cs" />
