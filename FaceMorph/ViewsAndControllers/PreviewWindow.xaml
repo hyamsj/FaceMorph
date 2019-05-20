@@ -10,15 +10,15 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
             <StackPanel>
                 <!--<Image Uid="{Binding Id}" Source="{Binding ImageData}" Width="200"/>-->
-                <Image Width="200" Height="250" x:Name="currImage" Source="{Binding CurrImage}"/>
+                <Image Width="400" Height="500" x:Name="currImage" Source="{Binding CurrImage}"/>
                 <Label Content="Current Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
             <StackPanel>
-                <Image Width="200" Height="250" x:Name="morphImage" Source="{Binding Morph}"/>
+                <Image Width="400" Height="500" x:Name="morphImage" Source="{Binding Morph}"/>
                 <Label Content="Morphed Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
             <StackPanel>
-                <Image Width="200" Height="250" x:Name="nextImage" Source="{Binding NextImage}"/>
+                <Image Width="400" Height="500" x:Name="nextImage" Source="{Binding NextImage}"/>
                 <Label Content="Next Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
         </StackPanel>
