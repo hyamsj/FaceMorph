@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FaceMorph.ViewsAndControllers"
         mc:Ignorable="d"
-        Title="PreviewWindow" Height="900" Width="1600"  WindowStartupLocation="CenterScreen">
+        Title="PreviewWindow" Height="400" Width="800"  WindowStartupLocation="CenterScreen" WindowState="Maximized">
     <Grid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
             <StackPanel>
@@ -26,6 +26,8 @@
             <StackPanel>
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
                 <Label x:Name="facesCountCurr" Content=""></Label>
+                <CheckBox Content="Delaunay" Checked="DelaunayCheckBox_Clicked" Unchecked="DelaunayCheckBox_Clicked"/>
+                <CheckBox Content="FFP" Checked="FFPCheckbox_Clicked"/>
             </StackPanel>
             <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click" x:Uid="leftButtonCurr"/>
             <Button Width="50" Height="50" Click="DisplayFaceClicked">
@@ -42,6 +44,8 @@
             <StackPanel>
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
                 <Label x:Name="facesCountNext" Content=""></Label>
+                <CheckBox Content="Delaunay"/>
+                <CheckBox Content="FFP"/>
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">

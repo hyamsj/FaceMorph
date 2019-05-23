@@ -45,6 +45,10 @@ namespace FaceMorph.ViewsAndControllers
         Mat nextDetectedFacesMat = new Mat();
         Image<Bgr, byte> currDetectedFacesImg;
         Image<Bgr, byte> nextDetectedFacesImg;
+        Image<Bgr, byte> currDelaunayImg;
+        Image<Bgr, byte> nextDelaunayImg;
+        Image<Bgr, byte> nextFFPImg;
+        Image<Bgr, byte> currFFPImg;
 
 
         VectorOfVectorOfInt delaunayTri = new VectorOfVectorOfInt();
@@ -75,19 +79,17 @@ namespace FaceMorph.ViewsAndControllers
             {
                 currImageI = new Image<Bgr, byte>(curr.Title);
                 nextImageI = new Image<Bgr, byte>(next.Title);
-                //_preprocessor = new ImagePreprocessor(currImageI, nextImageI);
                 _preprocessor = new ImagePreprocessor(curr, next);
+                if (!_preprocessor.MorphEnabled)
+                {
+                    InitializeComponent();
+                    morphBtn.IsEnabled = false;
+                    mySlider.IsEnabled = false;
+                }
                 this.currImageI = _preprocessor.CurrImageI;
                 this.nextImageI = _preprocessor.NextImageI;
                 InitializeComponent();
             }
-            else
-            {
-                InitializeComponent();
-                morphBtn.IsEnabled = false;
-                mySlider.IsEnabled = false;
-            }
-
         }
 
 
@@ -479,5 +481,41 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        public void NoFaceFound(int facesCurr, int facesNext)
+        {
+            facesCountCurr.Content = $"{facesCurr}";
+            facesCountNext.Content = $"{facesNext}";
+        }
+
+        private void DelaunayCheckBox_Clicked(object sender, RoutedEventArgs e)
+        {
+
+            Mat tmp = new Mat();
+            currImageI.Mat.CopyTo(tmp);
+            this.currDelaunayImg = tmp.ToImage<Bgr, byte>();
+
+            foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesCurr)
+            {
+
+                System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                {
+                    CvInvoke.Polylines(currDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                }
+            }
+            currImage.Source = BitmapSourceConvert.ToBitmapSource(currDelaunayImg);
+        }
+
+        private void FFPCheckbox_Clicked(object sender, RoutedEventArgs e)
+        {
+            Mat tmp = new Mat();
+            currImageI.Mat.CopyTo(tmp);
+            this.nextFFPImg = tmp.ToImage<Bgr, byte>();
+            
+            FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
+            //CvInvoke.Imwrite("testffp.jpg", myImage);
+            currImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
+
+        }
     }
 }

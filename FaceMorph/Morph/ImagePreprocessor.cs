@@ -49,6 +49,8 @@ namespace FaceMorph.Morph
         public ImageDetails curr { get; set; }
         public ImageDetails next { get; set; }
 
+        public bool MorphEnabled { get; set; }
+
         //public ImagePreprocessor(Image<Bgr, byte> currImageI, Image<Bgr, byte> nextImageI)
         public ImagePreprocessor(ImageDetails curr, ImageDetails next)
         {
@@ -59,7 +61,86 @@ namespace FaceMorph.Morph
             this.NextImageI = new Image<Bgr, byte>(next.Title);
             //CvInvoke.Imwrite("testimages/test03.jpg", CurrImageI);
 
-            DetectFaceInfo();
+            ResizeImage();
+            DetectFace();
+            if ((facesArrCurr.Length > 0) && (facesArrNext.Length > 0))
+            {
+                MorphEnabled = true;
+                FindFacialFeaturePoints();
+                CreateDelaunay();
+            } else
+            {
+                MorphEnabled = false;
+            }
+            Console.WriteLine(facesArrCurr.Length);
+            Console.WriteLine(facesArrNext.Length);
+            // DetectFaceInfo();
+        }
+
+        private void ResizeImage()
+        {
+            // resize image: todo -> do while morphing, not during face detect step (maybe)
+            System.Drawing.Size currImageSize = new System.Drawing.Size(CurrImageI.Width, CurrImageI.Height);
+            System.Drawing.Size nextImageSize = new System.Drawing.Size(NextImageI.Width, NextImageI.Height);
+
+            if (currImageSize.Height > nextImageSize.Height || currImageSize.Width > nextImageSize.Width)
+            {
+
+                var tmp = CurrImageI.Mat; // unnecessary copy
+                currImageMat = GetSquareImage(tmp, NextImageI.Width);
+                CurrImageI = currImageMat.ToImage<Bgr, byte>();
+            }
+            else
+            {
+                var tmp = NextImageI.Mat; // unnecessary copy
+                nextImageMat = GetSquareImage(tmp, CurrImageI.Width);
+                NextImageI = nextImageMat.ToImage<Bgr, byte>();
+            }
+
+            this.curr.ResizedImage = CurrImageI;
+            this.next.ResizedImage = NextImageI;
+        }
+
+        private void DetectFace()
+        {
+            string facePath;
+            try
+            {
+                // get face detect dataset
+                facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+
+            CascadeClassifier classifierFace = new CascadeClassifier(facePath);
+            Image<Gray, byte> imgGrayCurr = CurrImageI.Convert<Gray, byte>().Clone();
+            Image<Gray, byte> imgGrayNext = NextImageI.Convert<Gray, byte>().Clone();
+
+            int minWidthCurr = (int)(CurrImageI.Width * HAAR_MIN_FACE_FACTOR);
+            int minHeightCurr = (int)(CurrImageI.Height * HAAR_MIN_FACE_FACTOR);
+            int maxWidthCurr = (int)(CurrImageI.Width * HAAR_MAX_FACE_FACTOR);
+            int maxHeightCurr = (int)(CurrImageI.Height * HAAR_MAX_FACE_FACTOR);
+
+            int minWidthNext = (int)(NextImageI.Width * HAAR_MIN_FACE_FACTOR);
+            int minWHeightNext = (int)(NextImageI.Height * HAAR_MIN_FACE_FACTOR);
+            int maxWidthNext = (int)(NextImageI.Width * HAAR_MAX_FACE_FACTOR);
+            int maxHeightNext = (int)(NextImageI.Height * HAAR_MAX_FACE_FACTOR);
+
+            System.Drawing.Size minSizeCurr = new System.Drawing.Size(minWidthCurr, minHeightCurr);
+            System.Drawing.Size maxSizeCurr = new System.Drawing.Size(maxWidthCurr, maxHeightCurr);
+
+            System.Drawing.Size minSizeNext = new System.Drawing.Size(minWidthNext, minWHeightNext);
+            System.Drawing.Size maxSizeNext = new System.Drawing.Size(maxWidthNext, maxHeightNext);
+
+
+            // Detect Faces
+            facesArrCurr = classifierFace.DetectMultiScale(imgGrayCurr, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeCurr, maxSizeCurr);
+            facesArrNext = classifierFace.DetectMultiScale(imgGrayNext, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeNext, maxSizeNext);
+
+
         }
 
         public void DetectFaceInfo()
@@ -78,6 +159,7 @@ namespace FaceMorph.Morph
 
             catch (Exception ex)
             {
+
                 throw new Exception(ex.Message);
             }
 
@@ -143,7 +225,7 @@ namespace FaceMorph.Morph
 
             CreateDelaunay();
 
-            
+
             //DrawFFPCurr();
             //DrawFFPNext();
             //DrawDelaunayCurr();
@@ -176,34 +258,50 @@ namespace FaceMorph.Morph
 
         private void FindFacialFeaturePoints()
         {
-            // if no faces found, send error to user -> todo cleanup
-            if (facesArrCurr != null && facesArrCurr.Length > 0)
+            string facePath;
+            try
             {
-                FacesListCurr = facesArrCurr.OfType<Rectangle>().ToList();
+                // get face detect dataset
+                facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
 
-                // Find facial feature points
-                VectorOfRect vrLeft = new VectorOfRect(facesArrCurr);
-                landmarksCurr = new VectorOfVectorOfPointF();
-
-                facemark.Fit(currImageMat, vrLeft, landmarksCurr);
-                ffpCurr = landmarksCurr[curr.SelectedFace];
-
+                // get FFP dataset
+                facemarkParam = new FacemarkLBFParams();
+                facemark = new FacemarkLBF(facemarkParam);
+                facemark.LoadModel(@"../../data/lbfmodel.yaml");
             }
-            if (facesArrNext != null && facesArrNext.Length > 0)
+
+            catch (Exception ex)
             {
-                FacesListNext = facesArrNext.OfType<Rectangle>().ToList();
 
-                // Find facial feature points
-                VectorOfRect vrRight = new VectorOfRect(facesArrNext);
-                landmarksNext = new VectorOfVectorOfPointF();
+                throw new Exception(ex.Message);
+            }
 
-                facemark.Fit(nextImageMat, vrRight, landmarksNext);
-                ffpNext = landmarksNext[next.SelectedFace]; // todo: user needs to be able to choose face
-            }
-            else
-            {
-                throw new Exception("no face found");
-            }
+            // initialize imageMat
+            currImageMat = CurrImageI.Mat;
+            nextImageMat = NextImageI.Mat;
+
+            // Current Face
+            FacesListCurr = facesArrCurr.OfType<Rectangle>().ToList();
+
+            // Find facial feature points
+            VectorOfRect vrLeft = new VectorOfRect(facesArrCurr);
+            landmarksCurr = new VectorOfVectorOfPointF();
+
+            facemark.Fit(currImageMat, vrLeft, landmarksCurr);
+            ffpCurr = landmarksCurr[curr.SelectedFace];
+
+
+            // Next Face
+            FacesListNext = facesArrNext.OfType<Rectangle>().ToList();
+
+            // Find facial feature points
+            VectorOfRect vrRight = new VectorOfRect(facesArrNext);
+            landmarksNext = new VectorOfVectorOfPointF();
+
+            facemark.Fit(nextImageMat, vrRight, landmarksNext);
+            ffpNext = landmarksNext[next.SelectedFace];
+
+
         }
 
         private Mat GetSquareImage(Mat img, int targetWidth)
