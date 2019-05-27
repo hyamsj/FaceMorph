@@ -77,21 +77,33 @@ namespace FaceMorph.ViewsAndControllers
 
             if (next != null)
             {
-                currImageI = new Image<Bgr, byte>(curr.Title);
-                nextImageI = new Image<Bgr, byte>(next.Title);
-                _preprocessor = new ImagePreprocessor(curr, next);
-                if (!_preprocessor.MorphEnabled)
-                {
-                    InitializeComponent();
-                    morphBtn.IsEnabled = false;
-                    mySlider.IsEnabled = false;
-                }
-                this.currImageI = _preprocessor.CurrImageI;
-                this.nextImageI = _preprocessor.NextImageI;
-                InitializeComponent();
+                RefreshDisplayedImages();
+                
             }
         }
 
+        private void RefreshDisplayedImages()
+        {
+            currImageI = new Image<Bgr, byte>(curr.Title);
+            nextImageI = new Image<Bgr, byte>(next.Title);
+            _preprocessor = new ImagePreprocessor(curr, next);
+
+            int currFacesCount = _preprocessor.FacesListCurr.Count;
+            int nextFacesCount = _preprocessor.FacesListNext.Count;
+            if (currFacesCount > 0 && nextFacesCount > 0)
+            {
+                facesDetected = true;
+            }
+            if (!_preprocessor.MorphEnabled)
+            {
+                InitializeComponent();
+                morphBtn.IsEnabled = false;
+                mySlider.IsEnabled = false;
+            }
+            this.currImageI = _preprocessor.CurrImageI;
+            this.nextImageI = _preprocessor.NextImageI;
+            
+        }
 
         public void DisplayImages()
         {
@@ -127,13 +139,20 @@ namespace FaceMorph.ViewsAndControllers
             }
             else
             {
-                //prev = Images.Where(x => x.Id == curr.Id - 1).FirstOrDefault();
                 next = Images.Where(x => x.Id == curr.Id + 1).FirstOrDefault();
+
                 this.DataContext = new PreviewImageHolder()
                 {
                     CurrImage = new BitmapImage(new Uri(curr.Title)),
                     NextImage = new BitmapImage(new Uri(next.Title)),
                 };
+
+                var pff = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(curr.Title));
+                //currImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(curr.Title));
+                //nextImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(next.Title));
+
+                //CvInvoke.Imwrite("testimages/test05a.jpg", new Image<Bgr, byte>(curr.Title));
+                //CvInvoke.Imwrite("testimages/test05b.jpg", new Image<Bgr, byte>(next.Title));
 
             }
 
@@ -145,7 +164,7 @@ namespace FaceMorph.ViewsAndControllers
             {
                 facesCountCurr.Content = $"Nothing to morph";
             }
-            else if (!facesDetected)
+            else if (facesDetected)
             {
 
                 DrawFaceRectsCurr(_preprocessor.FacesListCurr); // todo cleanup
@@ -163,7 +182,7 @@ namespace FaceMorph.ViewsAndControllers
             {
                 Mat tmp = new Mat();
                 currImageI.Mat.CopyTo(tmp);
-                currDetectedFacesImg = tmp.ToImage<Bgr,byte>();
+                currDetectedFacesImg = tmp.ToImage<Bgr, byte>();
 
                 if (facesList.Count > 0)
                 {
@@ -183,12 +202,8 @@ namespace FaceMorph.ViewsAndControllers
                     }
 
                 }
-                PreviewImageHolder updatedImage = new PreviewImageHolder
-                {
-                    CurrImage = BitmapSourceConvert.ToBitmapSource(currDetectedFacesImg),
-                };
-                
-                currImage.DataContext = updatedImage;
+                CvInvoke.Imwrite("testimages/test02.jpg", currDetectedFacesImg);
+                currImage.Source = BitmapSourceConvert.ToBitmapSource(currDetectedFacesImg);
 
             }
 
@@ -223,12 +238,7 @@ namespace FaceMorph.ViewsAndControllers
                     }
 
                 }
-                PreviewImageHolder updatedImage = new PreviewImageHolder
-                {
-                    NextImage = BitmapSourceConvert.ToBitmapSource(nextDetectedFacesImg),
-                };
-
-                nextImage.DataContext = updatedImage;
+                nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDetectedFacesImg);
             }
         }
 
@@ -407,9 +417,9 @@ namespace FaceMorph.ViewsAndControllers
             List<Rectangle> tmpfacesList;
             Image<Bgr, byte> tmpImageI;
 
-            
 
-            if (imgLocation == (int)ImageEnum.Curr) 
+
+            if (imgLocation == (int)ImageEnum.Curr)
             {
                 tmpcurrentFace = selectedFaceCurr;
                 curr.SelectedFace = selectedFaceCurr;
@@ -449,12 +459,8 @@ namespace FaceMorph.ViewsAndControllers
 
             if (imgLocation == (int)ImageEnum.Curr)
             {
-                PreviewImageHolder updatedImage = new PreviewImageHolder
-                {
-                    CurrImage = BitmapSourceConvert.ToBitmapSource(tmpImageI),
-                };
-                currImage.DataContext = updatedImage;
                 curr.FaceLocation = _preprocessor.FacesListCurr[tmpcurrentFace];
+                currImage.Source = BitmapSourceConvert.ToBitmapSource(tmpImageI);
 
 
                 selectedFaceCurr = tmpcurrentFace;
@@ -464,18 +470,12 @@ namespace FaceMorph.ViewsAndControllers
             }
             else
             {
-                PreviewImageHolder updatedImage = new PreviewImageHolder
-                {
-                    NextImage = BitmapSourceConvert.ToBitmapSource(tmpImageI),
-                };
-                nextImage.DataContext = updatedImage;
+                nextImage.Source = BitmapSourceConvert.ToBitmapSource(tmpImageI);
                 next.FaceLocation = _preprocessor.FacesListNext[tmpcurrentFace];
 
                 selectedFaceNext = tmpcurrentFace;
                 next.SelectedFace = tmpcurrentFace;
                 _preprocessor.FacesListNext = tmpfacesList;
-                //nextImageI = tmpImageI;
-
             }
             _preprocessor.UpdateSelectedFace(curr.SelectedFace, next.SelectedFace);
 
@@ -489,33 +489,141 @@ namespace FaceMorph.ViewsAndControllers
 
         private void DelaunayCheckBox_Clicked(object sender, RoutedEventArgs e)
         {
-
             Mat tmp = new Mat();
-            currImageI.Mat.CopyTo(tmp);
-            this.currDelaunayImg = tmp.ToImage<Bgr, byte>();
-
-            foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesCurr)
+            string buttonName = ((RadioButton)sender).Uid;
+            switch (buttonName)
             {
+                case "delaunayRBCurr":
+                    currImageI.Mat.CopyTo(tmp);
+                    this.currDelaunayImg = tmp.ToImage<Bgr, byte>();
 
-                System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
-                using (VectorOfPoint vp = new VectorOfPoint(vertices))
-                {
-                    CvInvoke.Polylines(currDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
-                }
+                    foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesCurr)
+                    {
+
+                        System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                        using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                        {
+                            CvInvoke.Polylines(currDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                        }
+                    }
+                    currImage.Source = BitmapSourceConvert.ToBitmapSource(currDelaunayImg);
+
+
+                    break;
+                case "delaunayRBNext":
+                    nextImageI.Mat.CopyTo(tmp);
+                    this.nextDelaunayImg = tmp.ToImage<Bgr, byte>();
+
+                    foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesNext)
+                    {
+
+                        System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                        using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                        {
+                            CvInvoke.Polylines(nextDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                        }
+                    }
+                    nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDelaunayImg);
+                    break;
+                default:
+                    throw new MissingFieldException();
+
             }
-            currImage.Source = BitmapSourceConvert.ToBitmapSource(currDelaunayImg);
+
         }
 
         private void FFPCheckbox_Clicked(object sender, RoutedEventArgs e)
         {
             Mat tmp = new Mat();
-            currImageI.Mat.CopyTo(tmp);
-            this.nextFFPImg = tmp.ToImage<Bgr, byte>();
-            
-            FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
-            //CvInvoke.Imwrite("testffp.jpg", myImage);
-            currImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
+            string buttonName = ((RadioButton)sender).Uid;
+            switch (buttonName)
+            {
+                case "ffpRBCurr":
+                    currImageI.Mat.CopyTo(tmp);
+                    this.currFFPImg = tmp.ToImage<Bgr, byte>();
 
+                    FaceInvoke.DrawFacemarks(currFFPImg, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
+                    //CvInvoke.Imwrite("testffp.jpg", myImage);
+                    currImage.Source = BitmapSourceConvert.ToBitmapSource(currFFPImg);
+                    break;
+                case "ffpRBNext":
+                    nextImageI.Mat.CopyTo(tmp);
+                    this.nextFFPImg = tmp.ToImage<Bgr, byte>();
+                    FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
+                    nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
+                    break;
+                default:
+                    throw new MissingFieldException();
+
+            }
+
+
+        }
+
+        private void NoneRB_Clicked(object sender, RoutedEventArgs e)
+        {
+            string buttonName = ((RadioButton)sender).Uid;
+            switch (buttonName)
+            {
+                case "noneRBCurr":
+                    currImage.Source = BitmapSourceConvert.ToBitmapSource(currImageI);
+                    break;
+                case "noneRBNext":
+                    nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextImageI);
+                    break;
+                default:
+                    throw new MissingFieldException();
+            }
+
+
+
+
+        }
+
+        private void ChangeActivePicturesButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            string buttonName = ((Button)sender).Uid;
+
+            switch (buttonName)
+            {
+                // left
+                case "left":
+                    // do stuff
+                    break;
+                // right
+                case "right":
+                    // do stuff
+                    int currIdOld = curr.Id;
+                    int currIdNew = currIdOld + 1;
+                    if (Images.Count <= currIdNew + 1)
+                    {
+                        MessageBox.Show("no next image");
+                    }
+                    else
+                    {
+                        ImageDetails newCurrImageDetails = Images.ElementAt(currIdNew);
+                        ImageDetails newNextImageDetails = Images.ElementAt(currIdNew + 1);
+                        this.curr = newCurrImageDetails;
+                        this.next = newNextImageDetails;
+
+                        currImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(curr.Title));
+                        nextImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(next.Title));
+                        //CvInvoke.Imwrite("testimages/test04.jpg", new Image<Bgr, byte>(y.Title));
+                        //DisplayImages();
+                    }
+
+                    break;
+                default:
+                    throw new MissingFieldException();
+            }
+            //this.curr = curr.;
+            DisplayImages();
+        }
+
+        private void CurrImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            ((System.Windows.Controls.Image)sender).Source = new BitmapImage(new Uri("/Assets/MyDefaultImage.png", UriKind.Relative));
+        
         }
     }
 }

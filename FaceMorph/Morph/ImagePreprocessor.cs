@@ -28,12 +28,12 @@ namespace FaceMorph.Morph
 
         Mat currImageMat = new Mat();
         Mat nextImageMat = new Mat();
-        Rectangle[] facesArrCurr;
-        Rectangle[] facesArrNext;
+        Rectangle[] facesArrCurr { get; set; }
+        Rectangle[] facesArrNext { get; set; } 
 
         public const int RECT_WIDTH = 5;
-        public const double HAAR_SCALE_FACTOR = 1.05;
-        public const int HAAR_SCALE_MIN_NEIGHBOURS = 4;
+        public const double HAAR_SCALE_FACTOR = 1.4;
+        public const int HAAR_SCALE_MIN_NEIGHBOURS = 6;
         public const double HAAR_MIN_FACE_FACTOR = 0.3;
         public const double HAAR_MAX_FACE_FACTOR = 0.8;
 
@@ -139,6 +139,9 @@ namespace FaceMorph.Morph
             // Detect Faces
             facesArrCurr = classifierFace.DetectMultiScale(imgGrayCurr, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeCurr, maxSizeCurr);
             facesArrNext = classifierFace.DetectMultiScale(imgGrayNext, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeNext, maxSizeNext);
+
+            FacesListCurr = facesArrCurr.ToList<Rectangle>();
+            FacesListNext = facesArrNext.ToList<Rectangle>();
 
 
         }

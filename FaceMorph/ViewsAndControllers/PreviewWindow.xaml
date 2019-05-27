@@ -5,20 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FaceMorph.ViewsAndControllers"
         mc:Ignorable="d"
-        Title="PreviewWindow" Height="400" Width="800"  WindowStartupLocation="CenterScreen" WindowState="Maximized">
+        Title="PreviewWindow" Height="800" Width="1600"  WindowStartupLocation="CenterScreen" WindowState="Maximized">
     <Grid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
             <StackPanel>
                 <!--<Image Uid="{Binding Id}" Source="{Binding ImageData}" Width="200"/>-->
-                <Image Width="400" Height="500" x:Name="currImage" Source="{Binding CurrImage}"/>
+                <Image Width="400" Height="500" x:Name="currImage" Source="/data/MyDefaultImage.png" ImageFailed="CurrImage_ImageFailed"/>
                 <Label Content="Current Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
             <StackPanel>
-                <Image Width="400" Height="500" x:Name="morphImage" Source="{Binding Morph}"/>
+                <Image Width="400" Height="500" x:Name="morphImage" Source="/data/MyDefaultImage.png" ImageFailed="CurrImage_ImageFailed"/>
                 <Label Content="Morphed Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
             <StackPanel>
-                <Image Width="400" Height="500" x:Name="nextImage" Source="{Binding NextImage}"/>
+                <Image Width="400" Height="500" x:Name="nextImage" Source="/data/MyDefaultImage.png" ImageFailed="CurrImage_ImageFailed"/>
                 <Label Content="Next Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
         </StackPanel>
@@ -26,8 +26,9 @@
             <StackPanel>
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
                 <Label x:Name="facesCountCurr" Content=""></Label>
-                <CheckBox Content="Delaunay" Checked="DelaunayCheckBox_Clicked" Unchecked="DelaunayCheckBox_Clicked"/>
-                <CheckBox Content="FFP" Checked="FFPCheckbox_Clicked"/>
+                <RadioButton GroupName="left" Content="None" Checked="NoneRB_Clicked" Unchecked="NoneRB_Clicked" x:Uid="noneRBCurr" IsChecked="True"/>
+                <RadioButton GroupName="left" Content="Delaunay" Checked="DelaunayCheckBox_Clicked" Unchecked="DelaunayCheckBox_Clicked" x:Uid="delaunayRBCurr"/>
+                <RadioButton GroupName="left" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBCurr"/>
             </StackPanel>
             <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click" x:Uid="leftButtonCurr"/>
             <Button Width="50" Height="50" Click="DisplayFaceClicked">
@@ -44,8 +45,9 @@
             <StackPanel>
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
                 <Label x:Name="facesCountNext" Content=""></Label>
-                <CheckBox Content="Delaunay"/>
-                <CheckBox Content="FFP"/>
+                <RadioButton GroupName="right" Content="None" Checked="NoneRB_Clicked" Unchecked="NoneRB_Clicked" x:Uid="noneRBNext" IsChecked="True"/>
+                <RadioButton GroupName="right" Content="Delaunay" Checked="DelaunayCheckBox_Clicked" Unchecked="DelaunayCheckBox_Clicked" x:Uid="delaunayRBNext"/>
+                <RadioButton GroupName="right" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBNext"/>
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
@@ -53,7 +55,9 @@
             <Slider Width="120" Margin="10,10,10,10" ValueChanged="Slider_ValueChanged" x:Name="mySlider" Minimum="0" Maximum="1" IsSnapToTickEnabled="True" TickFrequency="0.05" TickPlacement="BottomRight"/>
             <!--<Slider Width="200" Maximum="1" TickPlacement="BottomRight" TickFrequency="0.1" IsSnapToTickEnabled="True" Name="slValue" ValueChanged="SlValue_ValueChanged"/>-->
         </StackPanel>
-        
+        <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="50,0,0,0" Click="ChangeActivePicturesButton_Clicked" x:Uid="left"/>
+        <Button FontFamily="Marlett" FontSize="20" Content="4" Width="50" Height="50" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,50,0" Click="ChangeActivePicturesButton_Clicked" x:Uid="right"/>
+
 
     </Grid>
 </Window>
