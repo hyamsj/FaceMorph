@@ -78,8 +78,8 @@ namespace FaceMorph.ViewsAndControllers
             if (next != null)
             {
                 RefreshDisplayedImages();
-                
             }
+            InitializeComponent();
         }
 
         private void RefreshDisplayedImages()
@@ -107,6 +107,7 @@ namespace FaceMorph.ViewsAndControllers
 
         public void DisplayImages()
         {
+            Console.WriteLine("test");
             // checks if only one image in list, i.e. nothing to morph
             if (Images.Count == 1)
             {
@@ -583,18 +584,37 @@ namespace FaceMorph.ViewsAndControllers
         private void ChangeActivePicturesButton_Clicked(object sender, RoutedEventArgs e)
         {
             string buttonName = ((Button)sender).Uid;
+            int currIdOld, currIdNew;
 
             switch (buttonName)
             {
                 // left
                 case "left":
-                    // do stuff
+                    if (0 >= curr.Id)
+                    {
+                        MessageBox.Show("no next image");
+                    } 
+                    else
+                    {
+                        currIdOld = curr.Id;
+                        currIdNew = currIdOld - 1;
+                        ImageDetails newCurrImageDetails = Images.ElementAt(currIdNew);
+                        ImageDetails newNextImageDetails = Images.ElementAt(currIdNew + 1);
+                        this.curr = newCurrImageDetails;
+                        this.next = newNextImageDetails;
+
+                        currImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(curr.Title));
+                        nextImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(next.Title));
+
+                        RefreshDisplayedImages();
+
+
+                    }
                     break;
                 // right
                 case "right":
-                    // do stuff
-                    int currIdOld = curr.Id;
-                    int currIdNew = currIdOld + 1;
+                    currIdOld = curr.Id;
+                    currIdNew = currIdOld + 1;
                     if (Images.Count <= currIdNew + 1)
                     {
                         MessageBox.Show("no next image");
@@ -608,6 +628,8 @@ namespace FaceMorph.ViewsAndControllers
 
                         currImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(curr.Title));
                         nextImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(next.Title));
+
+                        RefreshDisplayedImages();
                         //CvInvoke.Imwrite("testimages/test04.jpg", new Image<Bgr, byte>(y.Title));
                         //DisplayImages();
                     }
@@ -616,8 +638,8 @@ namespace FaceMorph.ViewsAndControllers
                 default:
                     throw new MissingFieldException();
             }
-            //this.curr = curr.;
-            DisplayImages();
+
+            DisplayImages(); // delete?
         }
 
         private void CurrImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
