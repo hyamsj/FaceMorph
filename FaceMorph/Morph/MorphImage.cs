@@ -34,7 +34,7 @@ namespace FaceMorph.Helpers
             this.img1 = imgdet1.ResizedImage.Mat;
             this.img2 = imgdet2.ResizedImage.Mat;
             this.alpha = alpha;
-            CvInvoke.Imwrite("testimages/morph.jpg", img1);
+            
 
             img1.ConvertTo(img1, Emgu.CV.CvEnum.DepthType.Cv32F);
             img2.ConvertTo(img2, Emgu.CV.CvEnum.DepthType.Cv32F);
@@ -43,8 +43,8 @@ namespace FaceMorph.Helpers
             this.points2 = points2;
 
             // Add Points for whole image
-            points1 = AddCornerPoints(points1, img1); // todo: corner points get added twice
-            points2 = AddCornerPoints(points2, img2);
+            //points1 = AddCornerPoints(points1, img1); // todo: corner points get added twice
+            //points2 = AddCornerPoints(points2, img2);
 
             // Create an instance of Subdiv2D
             Rectangle rect = new Rectangle(0, 0, img1.Size.Width, img1.Size.Height);
@@ -301,6 +301,7 @@ namespace FaceMorph.Helpers
             Mat img1Rect = new Mat(img1, r1);
             Mat img2Rect = new Mat(img2, r2);
 
+
             Mat warpImage1 = Mat.Zeros(rM.Height, rM.Width, Emgu.CV.CvEnum.DepthType.Cv32F, 3);
             Mat warpImage2 = Mat.Zeros(rM.Height, rM.Width, Emgu.CV.CvEnum.DepthType.Cv32F, 3);
 
@@ -313,12 +314,13 @@ namespace FaceMorph.Helpers
             Mat imgRect = new Mat();
             Image<Bgr, Byte> imgRect_I = (1.0f - alpha) * warpImage1.ToImage<Bgr, Byte>() + alpha * warpImage2.ToImage<Bgr, Byte>();
             imgRect = imgRect_I.Mat;
+            //CvInvoke.Imwrite($"testimages/01_alphablend/img{count}.jpg", imgRect);
 
             // Delete all outside of triangle
             imgRect.ConvertTo(imgRect, Emgu.CV.CvEnum.DepthType.Cv32F);
             mask.ConvertTo(mask, Emgu.CV.CvEnum.DepthType.Cv32F);
             CvInvoke.Multiply(imgRect, mask, imgRect);
-            //CvInvoke.Imwrite($"testimgs/scalartest{count}.jpg",imgRect);
+            //CvInvoke.Imwrite($"testimages/02_deleteoutsideoftri/img{count}.jpg",imgRect);
 
             // Delete all inside the target triangle
             Mat tmp = new Mat(imgM, rM);
@@ -331,11 +333,13 @@ namespace FaceMorph.Helpers
 
             CvInvoke.Subtract(mask_cp, mask, mask);
             CvInvoke.Multiply(tmp, mask, tmp);
+            //CvInvoke.Imwrite($"testimages/03_multipliedwithmask/img{count}.jpg", tmp);
             count++;
 
             // Add morphed triangle to target image
             CvInvoke.Add(tmp, imgRect, tmp); // img(rM) = tmp;
             Mat x = new Mat(imgM, rM);
+            //CvInvoke.Imwrite($"testimages/mask{count}.jpg", x);
             tmp.CopyTo(x);
         }
 
@@ -346,52 +350,9 @@ namespace FaceMorph.Helpers
             return imgMBitMap;
         }
 
-        private VectorOfPointF AddCornerPoints(VectorOfPointF points, Mat img)
+        public Image<Bgr, byte> GetMorphedImageI()
         {
-            if (points.Size < 76)
-            {
-                int width = img.Width;
-                int height = img.Height;
-
-                // top left
-                PointF[] p0 = { new PointF(0, 0) };
-                points.Push(p0);
-
-                // top center
-                PointF[] p1 = { new PointF((width / 2) - 1, 0) };
-                points.Push(p1);
-
-                // top right
-                PointF[] p2 = { new PointF(width - 1, 0) };
-                points.Push(p2);
-
-                // center right
-                PointF[] p3 = { new PointF(width - 1, (height / 2) - 1) };
-                points.Push(p3);
-
-                // bottom right
-                PointF[] p4 = { new PointF(width - 1, height - 1) };
-                points.Push(p4);
-
-                // bottom center
-                PointF[] p5 = { new PointF(width - 1, height - 1) };
-                points.Push(p5);
-
-                // bottom left
-                PointF[] p6 = { new PointF(0, height - 1) };
-                points.Push(p6);
-
-                //center left
-                PointF[] p7 = { new PointF(0, (height / 2) - 1) };
-                points.Push(p7);
-
-
-            }
-            return points;
-
-
+            return this.imgM.ToImage<Bgr, byte>(); 
         }
-
-
     }
 }

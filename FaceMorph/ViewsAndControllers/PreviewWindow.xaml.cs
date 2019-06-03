@@ -99,9 +99,35 @@ namespace FaceMorph.ViewsAndControllers
                 InitializeComponent();
                 morphBtn.IsEnabled = false;
                 mySlider.IsEnabled = false;
+            } else
+            {
+                InitializeComponent();
+                morphBtn.IsEnabled = true;
+                mySlider.IsEnabled = true;
             }
+
+            // Display errors and number of found faces:
+            facesCountCurr.Content = $"{_preprocessor.FacesListCurr.Count}";
+            facesCountNext.Content = $"{_preprocessor.FacesListNext.Count}";
+            errorMessageCurr.Content = "";
+            errorMessageNext.Content = "";
+            if (_preprocessor.FacesListCurr.Count == 0)
+            {
+                errorMessageCurr.Content = "No faces were found";
+            }
+            errorMessageCurr.Foreground = System.Windows.Media.Brushes.Red;
+
+            if (_preprocessor.FacesListNext.Count == 0)
+            {
+                errorMessageNext.Content = "No faces were found";
+            }
+            errorMessageNext.Foreground = System.Windows.Media.Brushes.Red;
+            // ---------------------------------------------
+
             this.currImageI = _preprocessor.CurrImageI;
             this.nextImageI = _preprocessor.NextImageI;
+
+
             
         }
 
@@ -149,11 +175,6 @@ namespace FaceMorph.ViewsAndControllers
                 };
 
                 var pff = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(curr.Title));
-                //currImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(curr.Title));
-                //nextImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(next.Title));
-
-                //CvInvoke.Imwrite("testimages/test05a.jpg", new Image<Bgr, byte>(curr.Title));
-                //CvInvoke.Imwrite("testimages/test05b.jpg", new Image<Bgr, byte>(next.Title));
 
             }
 
@@ -175,6 +196,23 @@ namespace FaceMorph.ViewsAndControllers
                 facesCountNext.Content = $"{_preprocessor.FacesListNext.Count}";
 
             }
+            //else
+            //{
+            //    facesCountCurr.Content = $"{_preprocessor.FacesListCurr.Count}";
+            //    facesCountNext.Content = $"{_preprocessor.FacesListNext.Count}";
+
+            //    if (_preprocessor.FacesListCurr.Count == 0)
+            //    {
+            //        errorMessageCurr.Content = "No faces were found";
+            //    } 
+            //    errorMessageCurr.Foreground = System.Windows.Media.Brushes.Red;
+
+            //    if (_preprocessor.FacesListNext.Count == 0)
+            //    {
+            //        errorMessageNext.Content = "No faces were found";
+            //    }
+            //    errorMessageNext.Foreground = System.Windows.Media.Brushes.Red;
+            //}
         }
 
         public void DrawFaceRectsCurr(List<Rectangle> facesList)
@@ -203,7 +241,7 @@ namespace FaceMorph.ViewsAndControllers
                     }
 
                 }
-                CvInvoke.Imwrite("testimages/test02.jpg", currDetectedFacesImg);
+                CvInvoke.Imwrite("testimages/detectedface.jpg", currDetectedFacesImg);
                 currImage.Source = BitmapSourceConvert.ToBitmapSource(currDetectedFacesImg);
 
             }
@@ -239,6 +277,7 @@ namespace FaceMorph.ViewsAndControllers
                     }
 
                 }
+                CvInvoke.Imwrite("testimages/detectedface.jpg", nextDetectedFacesImg);
                 nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDetectedFacesImg);
             }
         }
@@ -259,43 +298,14 @@ namespace FaceMorph.ViewsAndControllers
             nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
         }
 
-        public void DrawDelaunayCurr()
-        {
-            Image<Bgr, byte> myImage = currImageMat.ToImage<Bgr, byte>();
-
-            foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesCurr)
-            {
-
-                System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
-                using (VectorOfPoint vp = new VectorOfPoint(vertices))
-                {
-                    CvInvoke.Polylines(myImage, vp, true, new Bgr(255, 255, 255).MCvScalar);
-                }
-            }
-            currImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
-        }
-
-        public void DrawDelaunayNext()
-        {
-            Image<Bgr, byte> myImage = nextImageMat.ToImage<Bgr, byte>();
-
-            foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesNext)
-            {
-
-                System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
-                using (VectorOfPoint vp = new VectorOfPoint(vertices))
-                {
-                    CvInvoke.Polylines(myImage, vp, true, new Bgr(255, 255, 255).MCvScalar);
-                }
-            }
-            nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
-        }
-
         private void MorphButton_Click(object sender, RoutedEventArgs e)
         {
             //MorphImage m = new MorphImage(_preprocessor.CurrImageI.Mat, _preprocessor.NextImageI.Mat, _preprocessor.ffpCurr, _preprocessor.ffpNext, defaultAlpha);
             MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, defaultAlpha);
             morphImage.Source = m.GetMorphedImage();
+            mySlider.Value = 0.5;
+            
+            //CvInvoke.Imwrite("testimages/poster1.jpg",m.GetMorphedImageI());
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -508,6 +518,7 @@ namespace FaceMorph.ViewsAndControllers
                         }
                     }
                     currImage.Source = BitmapSourceConvert.ToBitmapSource(currDelaunayImg);
+                    //CvInvoke.Imwrite("testimages/delaunay_curr.jpg", currDelaunayImg);
 
 
                     break;
@@ -525,6 +536,7 @@ namespace FaceMorph.ViewsAndControllers
                         }
                     }
                     nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDelaunayImg);
+                    //CvInvoke.Imwrite("testimages/delaunay_next.jpg", nextDelaunayImg);
                     break;
                 default:
                     throw new MissingFieldException();
@@ -544,7 +556,7 @@ namespace FaceMorph.ViewsAndControllers
                     this.currFFPImg = tmp.ToImage<Bgr, byte>();
 
                     FaceInvoke.DrawFacemarks(currFFPImg, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
-                    //CvInvoke.Imwrite("testffp.jpg", myImage);
+                    //CvInvoke.Imwrite("testffp.jpg", currFFPImg);
                     currImage.Source = BitmapSourceConvert.ToBitmapSource(currFFPImg);
                     break;
                 case "ffpRBNext":
@@ -552,6 +564,7 @@ namespace FaceMorph.ViewsAndControllers
                     this.nextFFPImg = tmp.ToImage<Bgr, byte>();
                     FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
                     nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
+                    //CvInvoke.Imwrite("testimages/ffp.jpg", nextFFPImg);
                     break;
                 default:
                     throw new MissingFieldException();
@@ -588,7 +601,6 @@ namespace FaceMorph.ViewsAndControllers
 
             switch (buttonName)
             {
-                // left
                 case "left":
                     if (0 >= curr.Id)
                     {
@@ -611,7 +623,6 @@ namespace FaceMorph.ViewsAndControllers
 
                     }
                     break;
-                // right
                 case "right":
                     currIdOld = curr.Id;
                     currIdNew = currIdOld + 1;
@@ -639,13 +650,31 @@ namespace FaceMorph.ViewsAndControllers
                     throw new MissingFieldException();
             }
 
+            //morphImage.Source = new BitmapImage(new Uri(@"/data/MyDefaultImage.png"));
+
+            //morphImage.Source = new BitmapImage(new Uri("data/MyDefaultImage.png"));
+
+            var uriSource = new Uri(@"/FaceMorph;component/data/MyDefaultImage.png", UriKind.Relative);
+            morphImage.Source = new BitmapImage(uriSource);
+
+            //todo remove center image
+
             DisplayImages(); // delete?
+            
+
+
+
         }
 
         private void CurrImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
             ((System.Windows.Controls.Image)sender).Source = new BitmapImage(new Uri("/Assets/MyDefaultImage.png", UriKind.Relative));
         
+        }
+
+        private void VideoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            VideoGenerator vg = new VideoGenerator(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext);
         }
     }
 }

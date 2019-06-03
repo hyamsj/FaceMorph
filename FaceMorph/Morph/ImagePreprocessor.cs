@@ -85,7 +85,6 @@ namespace FaceMorph.Morph
 
             if (currImageSize.Height > nextImageSize.Height || currImageSize.Width > nextImageSize.Width)
             {
-
                 var tmp = CurrImageI.Mat; // unnecessary copy
                 currImageMat = GetSquareImage(tmp, NextImageI.Width);
                 CurrImageI = currImageMat.ToImage<Bgr, byte>();
@@ -146,95 +145,6 @@ namespace FaceMorph.Morph
 
         }
 
-        public void DetectFaceInfo()
-        {
-            string facePath;
-            try
-            {
-                // get face detect dataset
-                facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
-
-                // get FFP dataset
-                facemarkParam = new FacemarkLBFParams();
-                facemark = new FacemarkLBF(facemarkParam);
-                facemark.LoadModel(@"../../data/lbfmodel.yaml");
-            }
-
-            catch (Exception ex)
-            {
-
-                throw new Exception(ex.Message);
-            }
-
-            // initialize imageMat
-            currImageMat = CurrImageI.Mat;
-            nextImageMat = NextImageI.Mat;
-
-            // resize image: todo -> do while morphing, not during face detect step (maybe)
-            System.Drawing.Size currImageSize = new System.Drawing.Size(CurrImageI.Width, CurrImageI.Height);
-            System.Drawing.Size nextImageSize = new System.Drawing.Size(NextImageI.Width, NextImageI.Height);
-
-            if (currImageSize.Height > nextImageSize.Height || currImageSize.Width > nextImageSize.Width)
-            {
-
-                var tmp = CurrImageI.Mat; // unnecessary copy
-                currImageMat = GetSquareImage(tmp, NextImageI.Width);
-                CurrImageI = currImageMat.ToImage<Bgr, byte>();
-                //CvInvoke.Resize(currImageI, currImageI, nextImageSize);
-                //CvInvoke.Imwrite("testimages/currImageIResized.jpg", currImageMat);
-
-            }
-            else
-            {
-                var tmp = NextImageI.Mat; // unnecessary copy
-                nextImageMat = GetSquareImage(tmp, CurrImageI.Width);
-                NextImageI = nextImageMat.ToImage<Bgr, byte>();
-                //CvInvoke.Resize(nextImageI, nextImageI, currImageSize);
-                //CvInvoke.Imwrite("testimages/nextImageIresized.jpg", nextImageMat);
-            }
-
-            this.curr.ResizedImage = CurrImageI;
-            this.next.ResizedImage = NextImageI;
-            //CvInvoke.Imwrite("testimages/test01.jpg", CurrImageI);
-
-            CascadeClassifier classifierFace = new CascadeClassifier(facePath);
-            Image<Gray, byte> imgGrayCurr = CurrImageI.Convert<Gray, byte>().Clone();
-            Image<Gray, byte> imgGrayNext = NextImageI.Convert<Gray, byte>().Clone();
-
-
-            // defines size of face in picture to be found 
-            int minWidthCurr = (int)(CurrImageI.Width * HAAR_MIN_FACE_FACTOR);
-            int minHeightCurr = (int)(CurrImageI.Height * HAAR_MIN_FACE_FACTOR);
-            int maxWidthCurr = (int)(CurrImageI.Width * HAAR_MAX_FACE_FACTOR);
-            int maxHeightCurr = (int)(CurrImageI.Height * HAAR_MAX_FACE_FACTOR);
-
-            int minWidthNext = (int)(NextImageI.Width * HAAR_MIN_FACE_FACTOR);
-            int minWHeightNext = (int)(NextImageI.Height * HAAR_MIN_FACE_FACTOR);
-            int maxWidthNext = (int)(NextImageI.Width * HAAR_MAX_FACE_FACTOR);
-            int maxHeightNext = (int)(NextImageI.Height * HAAR_MAX_FACE_FACTOR);
-
-            System.Drawing.Size minSizeCurr = new System.Drawing.Size(minWidthCurr, minHeightCurr);
-            System.Drawing.Size maxSizeCurr = new System.Drawing.Size(maxWidthCurr, maxHeightCurr);
-
-            System.Drawing.Size minSizeNext = new System.Drawing.Size(minWidthNext, minWHeightNext);
-            System.Drawing.Size maxSizeNext = new System.Drawing.Size(maxWidthNext, maxHeightNext);
-
-
-            // Detect Faces
-            facesArrCurr = classifierFace.DetectMultiScale(imgGrayCurr, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeCurr, maxSizeCurr);
-            facesArrNext = classifierFace.DetectMultiScale(imgGrayNext, HAAR_SCALE_FACTOR, HAAR_SCALE_MIN_NEIGHBOURS, minSizeNext, maxSizeNext);
-
-            FindFacialFeaturePoints();
-
-            CreateDelaunay();
-
-
-            //DrawFFPCurr();
-            //DrawFFPNext();
-            //DrawDelaunayCurr();
-            //DrawDelaunayNext();
-        }
-
         private void CreateDelaunay()
         {
             // Delaunay
@@ -258,6 +168,8 @@ namespace FaceMorph.Morph
             }
 
         }
+
+
 
         private void FindFacialFeaturePoints()
         {
@@ -303,6 +215,56 @@ namespace FaceMorph.Morph
 
             facemark.Fit(nextImageMat, vrRight, landmarksNext);
             ffpNext = landmarksNext[next.SelectedFace];
+
+            // Add Corner points
+            ffpCurr = AddCornerPoints(ffpCurr, this.curr.ResizedImage.Mat);
+            ffpNext = AddCornerPoints(ffpNext, this.next.ResizedImage.Mat);
+
+
+        }
+
+        private VectorOfPointF AddCornerPoints(VectorOfPointF points, Mat img)
+        {
+            if (points.Size < 76)
+            {
+                int width = img.Width;
+                int height = img.Height;
+
+                // top left
+                PointF[] p0 = { new PointF(0, 0) };
+                points.Push(p0);
+
+                // top center
+                PointF[] p1 = { new PointF((width / 2) - 1, 0) };
+                points.Push(p1);
+
+                // top right
+                PointF[] p2 = { new PointF(width - 1, 0) };
+                points.Push(p2);
+
+                // center right
+                PointF[] p3 = { new PointF(width - 1, (height / 2) - 1) };
+                points.Push(p3);
+
+                // bottom right
+                PointF[] p4 = { new PointF(width - 1, height - 1) };
+                points.Push(p4);
+
+                // bottom center
+                PointF[] p5 = { new PointF((width / 2) - 1, height - 1) };
+                points.Push(p5);
+
+                // bottom left
+                PointF[] p6 = { new PointF(0, height - 1) };
+                points.Push(p6);
+
+                //center left
+                PointF[] p7 = { new PointF(0, (height / 2) - 1) };
+                points.Push(p7);
+
+
+            }
+            return points;
 
 
         }
