@@ -29,7 +29,7 @@ namespace FaceMorph.Helpers
                 m = new MorphImage(imgdet1, imgdet2, points1, points2, alpha);
                 Image<Bgr, byte> morphedImage = m.GetMorphedImageI();
                 videoWriter.Write(morphedImage.Mat);
-                alpha += 0.01f;
+                alpha += 0.05f;
             }
             if(videoWriter.IsOpened)
             {

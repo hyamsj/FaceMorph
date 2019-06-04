@@ -301,9 +301,17 @@ namespace FaceMorph.ViewsAndControllers
         private void MorphButton_Click(object sender, RoutedEventArgs e)
         {
             //MorphImage m = new MorphImage(_preprocessor.CurrImageI.Mat, _preprocessor.NextImageI.Mat, _preprocessor.ffpCurr, _preprocessor.ffpNext, defaultAlpha);
+
+            try
+            {
             MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, defaultAlpha);
             morphImage.Source = m.GetMorphedImage();
             mySlider.Value = 0.5;
+
+            }catch(Exception ex)
+            {
+                MessageBox.Show($"Something went wrong: {ex}");
+            }
             
             //CvInvoke.Imwrite("testimages/poster1.jpg",m.GetMorphedImageI());
         }
@@ -660,9 +668,6 @@ namespace FaceMorph.ViewsAndControllers
             //todo remove center image
 
             DisplayImages(); // delete?
-            
-
-
 
         }
 

@@ -29,7 +29,7 @@ namespace FaceMorph.Morph
         Mat currImageMat = new Mat();
         Mat nextImageMat = new Mat();
         Rectangle[] facesArrCurr { get; set; }
-        Rectangle[] facesArrNext { get; set; } 
+        Rectangle[] facesArrNext { get; set; }
 
         public const int RECT_WIDTH = 5;
         public const double HAAR_SCALE_FACTOR = 1.4;
@@ -61,6 +61,7 @@ namespace FaceMorph.Morph
             this.NextImageI = new Image<Bgr, byte>(next.Title);
             //CvInvoke.Imwrite("testimages/test03.jpg", CurrImageI);
 
+            DetectFace();
             ResizeImage();
             DetectFace();
             if ((facesArrCurr.Length > 0) && (facesArrNext.Length > 0))
@@ -68,7 +69,8 @@ namespace FaceMorph.Morph
                 MorphEnabled = true;
                 FindFacialFeaturePoints();
                 CreateDelaunay();
-            } else
+            }
+            else
             {
                 MorphEnabled = false;
             }
@@ -79,6 +81,37 @@ namespace FaceMorph.Morph
 
         private void ResizeImage()
         {
+            if (facesArrCurr.Length > 0 && facesArrNext.Length > 0)
+            {
+                CvInvoke.Imwrite("testimages/beforeROI.png", CurrImageI);
+                Rectangle rectCurr = facesArrCurr[0];
+                int widthC = rectCurr.Width;
+                widthC = (int)(widthC * 0.3);
+                int heightC = rectCurr.Height;
+                heightC = (int)(heightC * 0.3);
+                rectCurr.Inflate(widthC, heightC);
+                CurrImageI.ROI = rectCurr;
+
+                Rectangle rectNext = facesArrNext[0];
+                int widthN = rectNext.Width;
+                widthN = (int)(widthN * 0.3);
+                int heightN = rectNext.Height;
+                heightN = (int)(heightN * 0.3);
+                rectNext.Inflate(widthN, heightN);
+                NextImageI.ROI = rectNext;
+            }
+
+            // --------------------------------------
+
+            //CvInvoke.Imwrite("testimages/afterROI.png", CurrImageI);
+
+
+
+
+
+            // --------------------------------------
+
+
             // resize image: todo -> do while morphing, not during face detect step (maybe)
             System.Drawing.Size currImageSize = new System.Drawing.Size(CurrImageI.Width, CurrImageI.Height);
             System.Drawing.Size nextImageSize = new System.Drawing.Size(NextImageI.Width, NextImageI.Height);
@@ -141,6 +174,26 @@ namespace FaceMorph.Morph
 
             FacesListCurr = facesArrCurr.ToList<Rectangle>();
             FacesListNext = facesArrNext.ToList<Rectangle>();
+
+            // -----------------------------
+            //CvInvoke.Imwrite("testimages/beforeROI.png",CurrImageI);
+            //Rectangle rect = facesArrCurr[0];
+            //int width = rect.Width;
+            //width = (int)(width * 0.3);
+            //int height = rect.Height;
+            //height = (int)(height * 0.3);
+            //rect.Inflate(width,height);
+            //CurrImageI.ROI = rect;
+            //CvInvoke.Imwrite("testimages/afterROI.png",CurrImageI);
+
+
+
+
+            //rect.Size = rectSize;
+
+
+            // -----------------------------
+
 
 
         }
