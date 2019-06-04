@@ -8,6 +8,7 @@ using System.Windows;
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
 using Size = System.Drawing.Size;
+using FaceMorph.Morph;
 
 namespace FaceMorph.Helpers
 {
@@ -41,6 +42,16 @@ namespace FaceMorph.Helpers
 
             this.points1 = points1;
             this.points2 = points2;
+
+            if (points1.Size == 68)
+            {
+                AddCornerPoints(points1, img1);
+            }
+
+            if (points2.Size == 68)
+            {
+                AddCornerPoints(points2, img2);
+            }
 
             // Add Points for whole image
             //points1 = AddCornerPoints(points1, img1); // todo: corner points get added twice
@@ -353,6 +364,52 @@ namespace FaceMorph.Helpers
         public Image<Bgr, byte> GetMorphedImageI()
         {
             return this.imgM.ToImage<Bgr, byte>(); 
+        }
+
+        public VectorOfPointF AddCornerPoints(VectorOfPointF points, Mat img)
+        {
+            if (points.Size < 76)
+            {
+                int width = img.Width;
+                int height = img.Height;
+
+                // top left
+                PointF[] p0 = { new PointF(0, 0) };
+                points.Push(p0);
+
+                // top center
+                PointF[] p1 = { new PointF((width / 2) - 1, 0) };
+                points.Push(p1);
+
+                // top right
+                PointF[] p2 = { new PointF(width - 1, 0) };
+                points.Push(p2);
+
+                // center right
+                PointF[] p3 = { new PointF(width - 1, (height / 2) - 1) };
+                points.Push(p3);
+
+                // bottom right
+                PointF[] p4 = { new PointF(width - 1, height - 1) };
+                points.Push(p4);
+
+                // bottom center
+                PointF[] p5 = { new PointF((width / 2) - 1, height - 1) };
+                points.Push(p5);
+
+                // bottom left
+                PointF[] p6 = { new PointF(0, height - 1) };
+                points.Push(p6);
+
+                //center left
+                PointF[] p7 = { new PointF(0, (height / 2) - 1) };
+                points.Push(p7);
+
+
+            }
+            return points;
+
+
         }
     }
 }

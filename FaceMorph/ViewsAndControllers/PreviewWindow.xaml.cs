@@ -681,5 +681,10 @@ namespace FaceMorph.ViewsAndControllers
         {
             VideoGenerator vg = new VideoGenerator(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext);
         }
+
+        private void VideoBtn2_Click(object sender, RoutedEventArgs e)
+        {
+            VideoGenerator vg = new VideoGenerator(Images);
+        }
     }
 }

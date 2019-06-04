@@ -81,22 +81,23 @@ namespace FaceMorph.Morph
 
         private void ResizeImage()
         {
+            double resizeFactor = 0.4;
             if (facesArrCurr.Length > 0 && facesArrNext.Length > 0)
             {
                 CvInvoke.Imwrite("testimages/beforeROI.png", CurrImageI);
-                Rectangle rectCurr = facesArrCurr[0];
+                Rectangle rectCurr = facesArrCurr[0]; // todo: change
                 int widthC = rectCurr.Width;
-                widthC = (int)(widthC * 0.3);
+                widthC = (int)(widthC * resizeFactor);
                 int heightC = rectCurr.Height;
-                heightC = (int)(heightC * 0.3);
+                heightC = (int)(heightC * resizeFactor);
                 rectCurr.Inflate(widthC, heightC);
                 CurrImageI.ROI = rectCurr;
 
                 Rectangle rectNext = facesArrNext[0];
                 int widthN = rectNext.Width;
-                widthN = (int)(widthN * 0.3);
+                widthN = (int)(widthN * resizeFactor);
                 int heightN = rectNext.Height;
-                heightN = (int)(heightN * 0.3);
+                heightN = (int)(heightN * resizeFactor);
                 rectNext.Inflate(widthN, heightN);
                 NextImageI.ROI = rectNext;
             }
@@ -276,7 +277,7 @@ namespace FaceMorph.Morph
 
         }
 
-        private VectorOfPointF AddCornerPoints(VectorOfPointF points, Mat img)
+        public VectorOfPointF AddCornerPoints(VectorOfPointF points, Mat img)
         {
             if (points.Size < 76)
             {
