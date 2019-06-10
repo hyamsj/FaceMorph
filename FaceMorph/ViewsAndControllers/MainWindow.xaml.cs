@@ -148,6 +148,10 @@ namespace FaceMorph
         private void ImageDoubleClicked(object sender, MouseButtonEventArgs e)
         {
             ImageDetails curr = Images.Where(x => x.Id == _currentImage).FirstOrDefault();
+            if (_currentImage == Images.Count - 1)
+            {
+                curr = Images.Where(x => x.Id == _currentImage - 1).FirstOrDefault();
+            }
             
             PreviewWindow previewWindow = new PreviewWindow(curr, Images);
             previewWindow.ShowDialog(); // show dialog disables the main window

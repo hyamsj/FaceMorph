@@ -35,7 +35,7 @@ namespace FaceMorph.Helpers
             this.img1 = imgdet1.ResizedImage.Mat;
             this.img2 = imgdet2.ResizedImage.Mat;
             this.alpha = alpha;
-            
+            //CvInvoke.Imwrite($"testimages/imgcurr{alpha}.png", img1);
 
             img1.ConvertTo(img1, Emgu.CV.CvEnum.DepthType.Cv32F);
             img2.ConvertTo(img2, Emgu.CV.CvEnum.DepthType.Cv32F);

@@ -79,12 +79,38 @@ namespace FaceMorph.Morph
             // DetectFaceInfo();
         }
 
-        private void ResizeImage()
+        public ImagePreprocessor(ImageDetails curr, ImageDetails next, System.Drawing.Size sizeOfImage)
+        {
+            this.curr = curr;
+            this.next = next;
+
+            this.CurrImageI = new Image<Bgr, byte>(curr.Title);
+            this.NextImageI = new Image<Bgr, byte>(next.Title);
+            //CvInvoke.Imwrite("testimages/test03.jpg", CurrImageI);
+
+            DetectFace();
+            ResizeImage2(sizeOfImage);
+            DetectFace();
+            if ((facesArrCurr.Length > 0) && (facesArrNext.Length > 0))
+            {
+                MorphEnabled = true;
+                FindFacialFeaturePoints();
+                CreateDelaunay();
+            }
+            else
+            {
+                MorphEnabled = false;
+            }
+            Console.WriteLine(facesArrCurr.Length);
+            Console.WriteLine(facesArrNext.Length);
+            // DetectFaceInfo();
+        }
+
+        private void ResizeImage2(System.Drawing.Size sizeOfImage)
         {
             double resizeFactor = 0.4;
             if (facesArrCurr.Length > 0 && facesArrNext.Length > 0)
             {
-                CvInvoke.Imwrite("testimages/beforeROI.png", CurrImageI);
                 Rectangle rectCurr = facesArrCurr[0]; // todo: change
                 int widthC = rectCurr.Width;
                 widthC = (int)(widthC * resizeFactor);
@@ -104,28 +130,100 @@ namespace FaceMorph.Morph
 
             // --------------------------------------
 
-            //CvInvoke.Imwrite("testimages/afterROI.png", CurrImageI);
-
-
-
-
-
-            // --------------------------------------
-
-
             // resize image: todo -> do while morphing, not during face detect step (maybe)
             System.Drawing.Size currImageSize = new System.Drawing.Size(CurrImageI.Width, CurrImageI.Height);
             System.Drawing.Size nextImageSize = new System.Drawing.Size(NextImageI.Width, NextImageI.Height);
 
+            // downscale to 1080p
+            if (currImageSize.Height > 1080 || currImageSize.Width > 1920)
+            {
+                var tmp = CurrImageI.Mat;
+                currImageMat = GetSquareImage(tmp, 1920);
+                CurrImageI = currImageMat.ToImage<Bgr, byte>();
+            }
+
+            if (nextImageSize.Height > 1080 || nextImageSize.Width > 1920)
+            {
+                var tmp = NextImageI.Mat;
+                nextImageMat = GetSquareImage(tmp, 1920);
+                NextImageI = nextImageMat.ToImage<Bgr, byte>();
+            }
+
+
             if (currImageSize.Height > nextImageSize.Height || currImageSize.Width > nextImageSize.Width)
             {
-                var tmp = CurrImageI.Mat; // unnecessary copy
+                var tmp = CurrImageI.Mat;
                 currImageMat = GetSquareImage(tmp, NextImageI.Width);
                 CurrImageI = currImageMat.ToImage<Bgr, byte>();
             }
             else
             {
-                var tmp = NextImageI.Mat; // unnecessary copy
+                var tmp = NextImageI.Mat;
+                nextImageMat = GetSquareImage(tmp, CurrImageI.Width);
+                NextImageI = nextImageMat.ToImage<Bgr, byte>();
+            }
+
+            // -> resize
+            CurrImageI = CurrImageI.Resize(sizeOfImage.Width, sizeOfImage.Height, Emgu.CV.CvEnum.Inter.Linear);
+            NextImageI = NextImageI.Resize(sizeOfImage.Width, sizeOfImage.Height, Emgu.CV.CvEnum.Inter.Linear);
+
+            this.curr.ResizedImage = CurrImageI;
+            this.next.ResizedImage = NextImageI;
+        }
+
+        private void ResizeImage()
+        {
+            double resizeFactor = 0.4;
+            if (facesArrCurr.Length > 0 && facesArrNext.Length > 0)
+            {
+                Rectangle rectCurr = facesArrCurr[0]; // todo: change
+                int widthC = rectCurr.Width;
+                widthC = (int)(widthC * resizeFactor);
+                int heightC = rectCurr.Height;
+                heightC = (int)(heightC * resizeFactor);
+                rectCurr.Inflate(widthC, heightC);
+                CurrImageI.ROI = rectCurr;
+
+                Rectangle rectNext = facesArrNext[0];
+                int widthN = rectNext.Width;
+                widthN = (int)(widthN * resizeFactor);
+                int heightN = rectNext.Height;
+                heightN = (int)(heightN * resizeFactor);
+                rectNext.Inflate(widthN, heightN);
+                NextImageI.ROI = rectNext;
+            }
+
+            // --------------------------------------
+
+            // resize image: todo -> do while morphing, not during face detect step (maybe)
+            System.Drawing.Size currImageSize = new System.Drawing.Size(CurrImageI.Width, CurrImageI.Height);
+            System.Drawing.Size nextImageSize = new System.Drawing.Size(NextImageI.Width, NextImageI.Height);
+
+            // downscale to 1080p
+            if (currImageSize.Height > 1080 || currImageSize.Width > 1920)
+            {
+                var tmp = CurrImageI.Mat;
+                currImageMat = GetSquareImage(tmp, 1920);
+                CurrImageI = currImageMat.ToImage<Bgr, byte>();
+            }
+
+            if (nextImageSize.Height > 1080 || nextImageSize.Width > 1920)
+            {
+                var tmp = NextImageI.Mat;
+                nextImageMat = GetSquareImage(tmp, 1920);
+                NextImageI = nextImageMat.ToImage<Bgr, byte>();
+            }
+
+
+            if (currImageSize.Height > nextImageSize.Height || currImageSize.Width > nextImageSize.Width)
+            {
+                var tmp = CurrImageI.Mat; 
+                currImageMat = GetSquareImage(tmp, NextImageI.Width);
+                CurrImageI = currImageMat.ToImage<Bgr, byte>();
+            }
+            else
+            {
+                var tmp = NextImageI.Mat; 
                 nextImageMat = GetSquareImage(tmp, CurrImageI.Width);
                 NextImageI = nextImageMat.ToImage<Bgr, byte>();
             }
@@ -323,10 +421,15 @@ namespace FaceMorph.Morph
 
         }
 
-        private Mat GetSquareImage(Mat img, int targetWidth)
+        public Mat GetSquareImage(Mat img, int targetWidth)
         {
             int width = img.Cols;
             int height = img.Rows;
+
+            if (targetWidth > 1920)
+            {
+                targetWidth = 1920;
+            }
 
             Mat square = Mat.Zeros(targetWidth, targetWidth, Emgu.CV.CvEnum.DepthType.Cv8U, 3);
 

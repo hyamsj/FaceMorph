@@ -30,6 +30,8 @@ namespace OpenCVTest
                 MyImage = BitmapSourceConvert.ToBitmapSource(imgInput),
             };
 
+
+
             InitializeComponent();
         }
         /// <summary>
