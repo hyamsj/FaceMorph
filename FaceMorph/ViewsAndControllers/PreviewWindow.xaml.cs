@@ -791,8 +791,10 @@ namespace FaceMorph.ViewsAndControllers
             VideoGenerator vg = new VideoGenerator(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext);
         }
 
-        private void VideoBtn2_Click(object sender, RoutedEventArgs e)
+        private void VideoSaveFullVidBtn_Click(object sender, RoutedEventArgs e)
         {
+            //System.Windows.Forms.SaveFileDialog saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            //saveFileDialog.ShowDialog();
             VideoGenerator vg = new VideoGenerator(Images);
         }
     }

@@ -10,7 +10,7 @@
         <DockPanel>
             <Menu DockPanel.Dock="Top" >
                 <MenuItem Header="_Video">
-                    <MenuItem Header="Generate full video" Click="VideoBtn2_Click"></MenuItem>
+                    <MenuItem Header="Generate full video" Click="VideoSaveFullVidBtn_Click"></MenuItem>
                     <MenuItem Header="Generate current video" Click="VideoBtn_Click"></MenuItem>
                 </MenuItem>
             </Menu>
