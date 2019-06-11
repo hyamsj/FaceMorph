@@ -7,6 +7,13 @@
         mc:Ignorable="d"
         Title="PreviewWindow" Height="800" Width="1600"  WindowStartupLocation="CenterScreen" WindowState="Maximized">
     <Grid>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top" >
+                <MenuItem Header="_Video">
+                    <MenuItem Header="Generate full video" Click="VideoBtn2_Click"></MenuItem>
+                    <MenuItem Header="Generate current video" Click="VideoBtn_Click"></MenuItem>
+                </MenuItem>
+            </Menu>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
             <StackPanel>
                 <!--<Image Uid="{Binding Id}" Source="{Binding ImageData}" Width="200"/>-->
@@ -22,14 +29,15 @@
                 <Label Content="Next Image" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </StackPanel>
         </StackPanel>
+        </DockPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-            <StackPanel>
+            <StackPanel Margin="20,0,0,0">
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
                 <Label x:Name="facesCountCurr" Content=""></Label>
                 <Label x:Name="errorMessageCurr" Content=""></Label>
                 <RadioButton GroupName="left" Content="None" Checked="NoneRB_Clicked" Unchecked="NoneRB_Clicked" x:Uid="noneRBCurr" IsChecked="True"/>
                 <RadioButton GroupName="left" Content="Delaunay" Checked="DelaunayCheckBox_Clicked" Unchecked="DelaunayCheckBox_Clicked" x:Uid="delaunayRBCurr"/>
-                <RadioButton GroupName="left" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBCurr"/>
+                <RadioButton Margin="0,0,0,10" GroupName="left" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBCurr"/>
             </StackPanel>
             <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click" x:Uid="leftButtonCurr"/>
             <Button Width="50" Height="50" Click="DisplayFaceClicked">
@@ -49,17 +57,17 @@
                 <Label x:Name="errorMessageNext" Content=""></Label>
                 <RadioButton GroupName="right" Content="None" Checked="NoneRB_Clicked" Unchecked="NoneRB_Clicked" x:Uid="noneRBNext" IsChecked="True"/>
                 <RadioButton GroupName="right" Content="Delaunay" Checked="DelaunayCheckBox_Clicked" Unchecked="DelaunayCheckBox_Clicked" x:Uid="delaunayRBNext"/>
-                <RadioButton GroupName="right" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBNext"/>
+                <RadioButton Margin="0,0,0,10" GroupName="right" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBNext"/>
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
             <StackPanel Orientation="Horizontal">
-            <Button Width="80" Height="25" Content="Morph" Margin="10,0,10,0" Click="MorphButton_Click" x:Name="morphBtn"/>
+            <!--<Button Width="80" Height="25" Content="Morph" Margin="10,0,10,0" Click="MorphButton_Click" x:Name="morphBtn"/>
             <Button Width="80" Height="25" Content="Generate Video" Margin="10,0,10,0" Click="VideoBtn_Click" x:Name="videoBtn"/>
-            <Button Width="80" Height="25" Content="Generate Full Video" Margin="10,0,10,0" Click="VideoBtn2_Click" x:Name="fullvideoBtn"/>
+            <Button Width="80" Height="25" Content="Generate Full Video" Margin="10,0,10,0" Click="VideoBtn2_Click" x:Name="fullvideoBtn"/>-->
                 
             </StackPanel>
-            <Slider Width="120" Margin="10,10,10,10" ValueChanged="Slider_ValueChanged" x:Name="mySlider" Minimum="0" Maximum="1" IsSnapToTickEnabled="True" TickFrequency="0.05" TickPlacement="BottomRight"/>
+            <Slider Width="120" Margin="10,10,10,50" ValueChanged="Slider_ValueChanged" x:Name="mySlider" Minimum="0" Maximum="1" IsSnapToTickEnabled="True" TickFrequency="0.05" TickPlacement="BottomRight"/>
             <!--<Slider Width="200" Maximum="1" TickPlacement="BottomRight" TickFrequency="0.1" IsSnapToTickEnabled="True" Name="slValue" ValueChanged="SlValue_ValueChanged"/>-->
         </StackPanel>
         <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="50,0,0,0" Click="ChangeActivePicturesButton_Clicked" x:Uid="left"/>

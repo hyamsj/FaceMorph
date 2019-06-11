@@ -25,23 +25,11 @@
         <DockPanel Grid.ColumnSpan="4">
             <Menu DockPanel.Dock="Top" >
                 <MenuItem Header="_File">
-                    <MenuItem Header="_New" />
                     <MenuItem Header="_Add Folder" Click="FileAddFolder_Click" />
                     <MenuItem Header="_Add Image" Click="FileAddImage_Click" />
                     <MenuItem Header="_Save" Click="SaveProject_Click"/>
-                    <MenuItem Header="_Load Existing Project" Click="LoadProject_Click"/>
                     <Separator />
                     <MenuItem Header="_Exit" />
-                </MenuItem>
-                <MenuItem Header="_Edit">
-                    <MenuItem Header="_Undo" />
-                    <MenuItem Header="_Redo" />
-                    <MenuItem Header="_Add More Pictures" Click="AddMorePictures_Click"/>
-                    <MenuItem Header="_Delete Selected" />
-                    <MenuItem Header="_Enable Rearrange" IsCheckable="True" IsChecked="True"/>
-                </MenuItem>
-                <MenuItem Header="_View">
-                    <MenuItem Header="_Preview" />
                 </MenuItem>
             </Menu>
         </DockPanel>

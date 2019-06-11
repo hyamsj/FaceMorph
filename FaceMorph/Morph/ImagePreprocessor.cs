@@ -128,6 +128,8 @@ namespace FaceMorph.Morph
                 NextImageI.ROI = rectNext;
             }
 
+            
+
             // --------------------------------------
 
             // resize image: todo -> do while morphing, not during face detect step (maybe)
@@ -273,27 +275,6 @@ namespace FaceMorph.Morph
 
             FacesListCurr = facesArrCurr.ToList<Rectangle>();
             FacesListNext = facesArrNext.ToList<Rectangle>();
-
-            // -----------------------------
-            //CvInvoke.Imwrite("testimages/beforeROI.png",CurrImageI);
-            //Rectangle rect = facesArrCurr[0];
-            //int width = rect.Width;
-            //width = (int)(width * 0.3);
-            //int height = rect.Height;
-            //height = (int)(height * 0.3);
-            //rect.Inflate(width,height);
-            //CurrImageI.ROI = rect;
-            //CvInvoke.Imwrite("testimages/afterROI.png",CurrImageI);
-
-
-
-
-            //rect.Size = rectSize;
-
-
-            // -----------------------------
-
-
 
         }
 

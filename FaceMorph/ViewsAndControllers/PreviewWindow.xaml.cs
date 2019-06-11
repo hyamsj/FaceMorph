@@ -68,10 +68,14 @@ namespace FaceMorph.ViewsAndControllers
         private int selectedFaceCurr = 0;
         private int selectedFaceNext = 0;
 
+        private bool displayMorphOk = false;
+
         public PreviewWindow(ImageDetails imageDetails, ObservableCollection<ImageDetails> images)
         {
             this.Images = images;
             this.curr = imageDetails;
+
+
             DisplayImages();
 
 
@@ -80,6 +84,19 @@ namespace FaceMorph.ViewsAndControllers
                 RefreshDisplayedImages();
             }
             InitializeComponent();
+
+            if (displayMorphOk)
+            {
+                MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, 0.5f);
+                morphImage.Source = m.GetMorphedImage();
+                mySlider.Value = 0.5;
+            }
+            else
+            {
+                InitializeComponent();
+                var uriSource = new Uri(@"/FaceMorph;component/data/MyDefaultImage.png", UriKind.Relative);
+                morphImage.Source = new BitmapImage(uriSource);
+            }
         }
 
         private void RefreshDisplayedImages()
@@ -97,13 +114,16 @@ namespace FaceMorph.ViewsAndControllers
             if (!_preprocessor.MorphEnabled)
             {
                 InitializeComponent();
-                morphBtn.IsEnabled = false;
+                //morphBtn.IsEnabled = false;
                 mySlider.IsEnabled = false;
-            } else
+                displayMorphOk = false;
+            }
+            else
             {
                 InitializeComponent();
-                morphBtn.IsEnabled = true;
+                //morphBtn.IsEnabled = true;
                 mySlider.IsEnabled = true;
+                displayMorphOk = true;
             }
 
             // Display errors and number of found faces:
@@ -128,7 +148,7 @@ namespace FaceMorph.ViewsAndControllers
             this.nextImageI = _preprocessor.NextImageI;
 
 
-            
+
         }
 
         public void DisplayImages()
@@ -294,7 +314,7 @@ namespace FaceMorph.ViewsAndControllers
         {
             Image<Bgr, byte> myImage = nextImageMat.ToImage<Bgr, byte>();
             FaceInvoke.DrawFacemarks(myImage, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
-            //CvInvoke.Imwrite("testffp.jpg", myImage);
+            CvInvoke.Imwrite("testffp.jpg", myImage);
             nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
         }
 
@@ -304,15 +324,16 @@ namespace FaceMorph.ViewsAndControllers
 
             try
             {
-            MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, defaultAlpha);
-            morphImage.Source = m.GetMorphedImage();
-            mySlider.Value = 0.5;
+                MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, defaultAlpha);
+                morphImage.Source = m.GetMorphedImage();
+                mySlider.Value = 0.5;
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show($"Something went wrong: {ex}");
             }
-            
+
             //CvInvoke.Imwrite("testimages/poster1.jpg",m.GetMorphedImageI());
         }
 
@@ -572,7 +593,7 @@ namespace FaceMorph.ViewsAndControllers
                     this.nextFFPImg = tmp.ToImage<Bgr, byte>();
                     FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
                     nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
-                    //CvInvoke.Imwrite("testimages/ffp.jpg", nextFFPImg);
+                    CvInvoke.Imwrite("testimages/ffp.jpg", nextFFPImg);
                     break;
                 default:
                     throw new MissingFieldException();
@@ -613,7 +634,7 @@ namespace FaceMorph.ViewsAndControllers
                     if (0 >= curr.Id)
                     {
                         MessageBox.Show("no next image");
-                    } 
+                    }
                     else
                     {
                         currIdOld = curr.Id;
@@ -658,23 +679,25 @@ namespace FaceMorph.ViewsAndControllers
                     throw new MissingFieldException();
             }
 
-            //morphImage.Source = new BitmapImage(new Uri(@"/data/MyDefaultImage.png"));
+            if (displayMorphOk)
+            {
+                MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, 0.5f);
+                morphImage.Source = m.GetMorphedImage();
+                mySlider.Value = 0.5;
+            } else
+            {
+                var uriSource = new Uri(@"/FaceMorph;component/data/MyDefaultImage.png", UriKind.Relative);
+                morphImage.Source = new BitmapImage(uriSource);
+            }
 
-            //morphImage.Source = new BitmapImage(new Uri("data/MyDefaultImage.png"));
-
-            var uriSource = new Uri(@"/FaceMorph;component/data/MyDefaultImage.png", UriKind.Relative);
-            morphImage.Source = new BitmapImage(uriSource);
-
-            //todo remove center image
-
-            DisplayImages(); // delete?
+            DisplayImages(); 
 
         }
 
         private void CurrImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
             ((System.Windows.Controls.Image)sender).Source = new BitmapImage(new Uri("/Assets/MyDefaultImage.png", UriKind.Relative));
-        
+
         }
 
         private void VideoBtn_Click(object sender, RoutedEventArgs e)
