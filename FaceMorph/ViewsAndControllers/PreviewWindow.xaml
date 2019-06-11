@@ -35,9 +35,9 @@
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
                 <Label x:Name="facesCountCurr" Content=""></Label>
                 <Label x:Name="errorMessageCurr" Content=""></Label>
-                <RadioButton GroupName="left" Content="None" Checked="NoneRB_Clicked" Unchecked="NoneRB_Clicked" x:Uid="noneRBCurr" IsChecked="True"/>
-                <RadioButton GroupName="left" Content="Delaunay" Checked="DelaunayCheckBox_Clicked" Unchecked="DelaunayCheckBox_Clicked" x:Uid="delaunayRBCurr"/>
-                <RadioButton Margin="0,0,0,10" GroupName="left" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBCurr"/>
+                <RadioButton GroupName="left" Content="None" Checked="NoneRB_Clicked" x:Uid="noneRBCurr" IsChecked="True"/>
+                <RadioButton GroupName="left" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBCurr"/>
+                <RadioButton Margin="0,0,0,10" GroupName="left" Content="Delaunay" Checked="DelaunayCheckBox_Clicked" x:Uid="delaunayRBCurr"/>
             </StackPanel>
             <Button FontFamily="Marlett" FontSize="20" Content="3" Width="50" Height="50" Click="ChangeFaceLeftButton_Click" x:Uid="leftButtonCurr"/>
             <Button Width="50" Height="50" Click="DisplayFaceClicked">
@@ -55,9 +55,9 @@
                 <Label VerticalAlignment="Center" Content="Number of faces found: "></Label>
                 <Label x:Name="facesCountNext" Content=""></Label>
                 <Label x:Name="errorMessageNext" Content=""></Label>
-                <RadioButton GroupName="right" Content="None" Checked="NoneRB_Clicked" Unchecked="NoneRB_Clicked" x:Uid="noneRBNext" IsChecked="True"/>
-                <RadioButton GroupName="right" Content="Delaunay" Checked="DelaunayCheckBox_Clicked" Unchecked="DelaunayCheckBox_Clicked" x:Uid="delaunayRBNext"/>
-                <RadioButton Margin="0,0,0,10" GroupName="right" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBNext"/>
+                <RadioButton GroupName="right" Content="None" Checked="NoneRB_Clicked" x:Uid="noneRBNext" IsChecked="True"/>
+                <RadioButton GroupName="right" Content="FFP" Checked="FFPCheckbox_Clicked" x:Uid="ffpRBNext"/>
+                <RadioButton Margin="0,0,0,10" GroupName="right" Content="Delaunay" Checked="DelaunayCheckBox_Clicked" x:Uid="delaunayRBNext"/>
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">

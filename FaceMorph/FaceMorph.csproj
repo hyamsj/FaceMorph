@@ -73,6 +73,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="EmguTester.cs" />
+    <Compile Include="Helpers\ActiveButtonEnum.cs" />
     <Compile Include="Helpers\BitmapSourceConvert.cs" />
     <Compile Include="Helpers\ImageEnum.cs" />
     <Compile Include="Helpers\VideoGenerator.cs" />

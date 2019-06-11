@@ -69,12 +69,16 @@ namespace FaceMorph.ViewsAndControllers
         private int selectedFaceNext = 0;
 
         private bool displayMorphOk = false;
+        ActiveButtonEnum activeButtonEnumCurr;
+        ActiveButtonEnum activeButtonEnumNext;
 
         public PreviewWindow(ImageDetails imageDetails, ObservableCollection<ImageDetails> images)
         {
             this.Images = images;
             this.curr = imageDetails;
 
+            activeButtonEnumCurr = ActiveButtonEnum.None;
+            activeButtonEnumNext = ActiveButtonEnum.None;
 
             DisplayImages();
 
@@ -153,7 +157,6 @@ namespace FaceMorph.ViewsAndControllers
 
         public void DisplayImages()
         {
-            Console.WriteLine("test");
             // checks if only one image in list, i.e. nothing to morph
             if (Images.Count == 1)
             {
@@ -216,23 +219,7 @@ namespace FaceMorph.ViewsAndControllers
                 facesCountNext.Content = $"{_preprocessor.FacesListNext.Count}";
 
             }
-            //else
-            //{
-            //    facesCountCurr.Content = $"{_preprocessor.FacesListCurr.Count}";
-            //    facesCountNext.Content = $"{_preprocessor.FacesListNext.Count}";
 
-            //    if (_preprocessor.FacesListCurr.Count == 0)
-            //    {
-            //        errorMessageCurr.Content = "No faces were found";
-            //    } 
-            //    errorMessageCurr.Foreground = System.Windows.Media.Brushes.Red;
-
-            //    if (_preprocessor.FacesListNext.Count == 0)
-            //    {
-            //        errorMessageNext.Content = "No faces were found";
-            //    }
-            //    errorMessageNext.Foreground = System.Windows.Media.Brushes.Red;
-            //}
         }
 
         public void DrawFaceRectsCurr(List<Rectangle> facesList)
@@ -247,7 +234,6 @@ namespace FaceMorph.ViewsAndControllers
                 {
                     for (int i = 0; i < facesList.Count; i++)
                     {
-                        Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
                         if (i == 0)
                         {
                             currDetectedFacesImg.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
@@ -261,7 +247,6 @@ namespace FaceMorph.ViewsAndControllers
                     }
 
                 }
-                CvInvoke.Imwrite("testimages/detectedface.jpg", currDetectedFacesImg);
                 currImage.Source = BitmapSourceConvert.ToBitmapSource(currDetectedFacesImg);
 
             }
@@ -280,7 +265,6 @@ namespace FaceMorph.ViewsAndControllers
                 {
                     for (int i = 0; i < facesList.Count; i++)
                     {
-                        Console.WriteLine($"Width: {facesList[i].Width}, Height: {facesList[i].Height}");
                         if (i == 0)
                         {
                             // draw green rect
@@ -302,21 +286,21 @@ namespace FaceMorph.ViewsAndControllers
             }
         }
 
-        public void DrawFFPCurr()
-        {
-            Image<Bgr, byte> myImage = currImageMat.ToImage<Bgr, byte>();
-            FaceInvoke.DrawFacemarks(myImage, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
-            //CvInvoke.Imwrite("testffp.jpg", myImage);
-            currImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
-        }
+        //public void DrawFFPCurr()
+        //{
+        //    Image<Bgr, byte> myImage = currImageMat.ToImage<Bgr, byte>();
+        //    FaceInvoke.DrawFacemarks(myImage, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
+        //    //CvInvoke.Imwrite("testffp.jpg", myImage);
+        //    currImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
+        //}
 
-        public void DrawFFPNext()
-        {
-            Image<Bgr, byte> myImage = nextImageMat.ToImage<Bgr, byte>();
-            FaceInvoke.DrawFacemarks(myImage, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
-            CvInvoke.Imwrite("testffp.jpg", myImage);
-            nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
-        }
+        //public void DrawFFPNext()
+        //{
+        //    Image<Bgr, byte> myImage = nextImageMat.ToImage<Bgr, byte>();
+        //    FaceInvoke.DrawFacemarks(myImage, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
+        //    //CvInvoke.Imwrite("testffp.jpg", myImage);
+        //    nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
+        //}
 
         private void MorphButton_Click(object sender, RoutedEventArgs e)
         {
@@ -349,7 +333,6 @@ namespace FaceMorph.ViewsAndControllers
         private void ChangeFaceLeftButton_Click(object sender, RoutedEventArgs e)
         {
             string buttonName = ((Button)sender).Uid;
-            Console.WriteLine(buttonName);
 
             switch ((sender as Button).Uid)
             {
@@ -401,7 +384,6 @@ namespace FaceMorph.ViewsAndControllers
         private void ChangeFaceRightButton_Click(object sender, RoutedEventArgs e)
         {
             string buttonName = ((Button)sender).Uid;
-            Console.WriteLine(buttonName);
 
             switch ((sender as Button).Uid)
             {
@@ -534,38 +516,48 @@ namespace FaceMorph.ViewsAndControllers
             switch (buttonName)
             {
                 case "delaunayRBCurr":
-                    currImageI.Mat.CopyTo(tmp);
-                    this.currDelaunayImg = tmp.ToImage<Bgr, byte>();
-
-                    foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesCurr)
+                    if (_preprocessor.delaunayTrianglesCurr != null)
                     {
+                        currImageI.Mat.CopyTo(tmp);
+                        this.currDelaunayImg = tmp.ToImage<Bgr, byte>();
 
-                        System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
-                        using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                        foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesCurr)
                         {
-                            CvInvoke.Polylines(currDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+
+                            System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                            using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                            {
+                                CvInvoke.Polylines(currDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                            }
                         }
+                        currImage.Source = BitmapSourceConvert.ToBitmapSource(currDelaunayImg);
+                        activeButtonEnumCurr = ActiveButtonEnum.Delaunay;
+                        //CvInvoke.Imwrite("testimages/delaunay_curr.jpg", currDelaunayImg);
+
                     }
-                    currImage.Source = BitmapSourceConvert.ToBitmapSource(currDelaunayImg);
-                    //CvInvoke.Imwrite("testimages/delaunay_curr.jpg", currDelaunayImg);
 
 
                     break;
                 case "delaunayRBNext":
-                    nextImageI.Mat.CopyTo(tmp);
-                    this.nextDelaunayImg = tmp.ToImage<Bgr, byte>();
-
-                    foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesNext)
+                    if (_preprocessor.delaunayTrianglesNext != null)
                     {
+                        nextImageI.Mat.CopyTo(tmp);
+                        this.nextDelaunayImg = tmp.ToImage<Bgr, byte>();
 
-                        System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
-                        using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                        foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesNext)
                         {
-                            CvInvoke.Polylines(nextDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+
+                            System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                            using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                            {
+                                CvInvoke.Polylines(nextDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                            }
                         }
+                        nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDelaunayImg);
+                        //CvInvoke.Imwrite("testimages/delaunay_next.jpg", nextDelaunayImg);
+                        activeButtonEnumNext = ActiveButtonEnum.Delaunay;
+
                     }
-                    nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDelaunayImg);
-                    //CvInvoke.Imwrite("testimages/delaunay_next.jpg", nextDelaunayImg);
                     break;
                 default:
                     throw new MissingFieldException();
@@ -581,19 +573,28 @@ namespace FaceMorph.ViewsAndControllers
             switch (buttonName)
             {
                 case "ffpRBCurr":
-                    currImageI.Mat.CopyTo(tmp);
-                    this.currFFPImg = tmp.ToImage<Bgr, byte>();
+                    if (_preprocessor.ffpCurr != null)
+                    {
+                        currImageI.Mat.CopyTo(tmp);
+                        this.currFFPImg = tmp.ToImage<Bgr, byte>();
 
-                    FaceInvoke.DrawFacemarks(currFFPImg, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
-                    //CvInvoke.Imwrite("testffp.jpg", currFFPImg);
-                    currImage.Source = BitmapSourceConvert.ToBitmapSource(currFFPImg);
+                        FaceInvoke.DrawFacemarks(currFFPImg, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
+                        //CvInvoke.Imwrite("testffp.jpg", currFFPImg);
+                        currImage.Source = BitmapSourceConvert.ToBitmapSource(currFFPImg);
+                        activeButtonEnumCurr = ActiveButtonEnum.FFP;
+
+                    }
                     break;
                 case "ffpRBNext":
-                    nextImageI.Mat.CopyTo(tmp);
-                    this.nextFFPImg = tmp.ToImage<Bgr, byte>();
-                    FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
-                    nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
-                    CvInvoke.Imwrite("testimages/ffp.jpg", nextFFPImg);
+                    if (_preprocessor.ffpCurr != null)
+                    {
+                        nextImageI.Mat.CopyTo(tmp);
+                        this.nextFFPImg = tmp.ToImage<Bgr, byte>();
+                        FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
+                        nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
+                        //CvInvoke.Imwrite("testimages/ffp.jpg", nextFFPImg);
+                        activeButtonEnumNext = ActiveButtonEnum.FFP;
+                    }
                     break;
                 default:
                     throw new MissingFieldException();
@@ -605,14 +606,17 @@ namespace FaceMorph.ViewsAndControllers
 
         private void NoneRB_Clicked(object sender, RoutedEventArgs e)
         {
+
             string buttonName = ((RadioButton)sender).Uid;
             switch (buttonName)
             {
                 case "noneRBCurr":
                     currImage.Source = BitmapSourceConvert.ToBitmapSource(currImageI);
+                    activeButtonEnumCurr = ActiveButtonEnum.None;
                     break;
                 case "noneRBNext":
                     nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextImageI);
+                    activeButtonEnumNext = ActiveButtonEnum.None;
                     break;
                 default:
                     throw new MissingFieldException();
@@ -649,6 +653,11 @@ namespace FaceMorph.ViewsAndControllers
 
                         RefreshDisplayedImages();
 
+                        if (displayMorphOk)
+                        {
+                            DisplayImagesCorrectCB();
+
+                        }
 
                     }
                     break;
@@ -672,6 +681,11 @@ namespace FaceMorph.ViewsAndControllers
                         RefreshDisplayedImages();
                         //CvInvoke.Imwrite("testimages/test04.jpg", new Image<Bgr, byte>(y.Title));
                         //DisplayImages();
+                        if (displayMorphOk)
+                        {
+                            DisplayImagesCorrectCB();
+
+                        }
                     }
 
                     break;
@@ -684,14 +698,86 @@ namespace FaceMorph.ViewsAndControllers
                 MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, 0.5f);
                 morphImage.Source = m.GetMorphedImage();
                 mySlider.Value = 0.5;
-            } else
+            }
+            else
             {
                 var uriSource = new Uri(@"/FaceMorph;component/data/MyDefaultImage.png", UriKind.Relative);
                 morphImage.Source = new BitmapImage(uriSource);
             }
 
-            DisplayImages(); 
+            DisplayImages();
 
+        }
+
+        private void DisplayImagesCorrectCB()
+        {
+            Mat tmp = new Mat();
+            switch (activeButtonEnumCurr)
+            {
+                case ActiveButtonEnum.None:
+                    currImage.Source = BitmapSourceConvert.ToBitmapSource(currImageI);
+                    break;
+
+                case ActiveButtonEnum.FFP:
+                    currImageI.Mat.CopyTo(tmp);
+                    this.currFFPImg = tmp.ToImage<Bgr, byte>();
+                    FaceInvoke.DrawFacemarks(currFFPImg, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
+                    currImage.Source = BitmapSourceConvert.ToBitmapSource(currFFPImg);
+                    break;
+
+                case ActiveButtonEnum.Delaunay:
+                    currImageI.Mat.CopyTo(tmp);
+                    this.currDelaunayImg = tmp.ToImage<Bgr, byte>();
+
+                    foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesCurr)
+                    {
+
+                        System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                        using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                        {
+                            CvInvoke.Polylines(currDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                        }
+                    }
+                    currImage.Source = BitmapSourceConvert.ToBitmapSource(currDelaunayImg);
+                    break;
+
+                default:
+                    break;
+            }
+
+            switch (activeButtonEnumNext)
+            {
+                case ActiveButtonEnum.None:
+                    nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextImageI);
+                    break;
+
+                case ActiveButtonEnum.FFP:
+                    nextImageI.Mat.CopyTo(tmp);
+                    this.nextFFPImg = tmp.ToImage<Bgr, byte>();
+                    FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
+                    nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
+                    break;
+
+                case ActiveButtonEnum.Delaunay:
+                    nextImageI.Mat.CopyTo(tmp);
+                    this.nextDelaunayImg = tmp.ToImage<Bgr, byte>();
+
+                    foreach (Triangle2DF triangle in _preprocessor.delaunayTrianglesNext)
+                    {
+
+                        System.Drawing.Point[] vertices = Array.ConvertAll<PointF, System.Drawing.Point>(triangle.GetVertices(), System.Drawing.Point.Round);
+                        using (VectorOfPoint vp = new VectorOfPoint(vertices))
+                        {
+                            CvInvoke.Polylines(nextDelaunayImg, vp, true, new Bgr(255, 255, 255).MCvScalar);
+                        }
+                    }
+                    nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDelaunayImg);
+                    break;
+
+                default:
+                    break;
+            }
+            
         }
 
         private void CurrImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
