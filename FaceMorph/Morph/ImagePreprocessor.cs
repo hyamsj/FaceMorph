@@ -21,8 +21,8 @@ namespace FaceMorph.Morph
 
         FacemarkLBFParams facemarkParam;
         FacemarkLBF facemark;
-        VectorOfVectorOfPointF landmarksCurr;
-        VectorOfVectorOfPointF landmarksNext;
+        public VectorOfVectorOfPointF landmarksCurr { get; set; }
+        public VectorOfVectorOfPointF landmarksNext { get; set; }
         public VectorOfPointF ffpCurr { get; set; } // points with landmarks
         public VectorOfPointF ffpNext { get; set; }
 

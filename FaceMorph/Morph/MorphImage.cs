@@ -206,9 +206,9 @@ namespace FaceMorph.Helpers
             foreach (PointF p in pointsArr)
             {
                 subdiv.Insert(p);
-
                 if (drawAnimated)
                 {
+
                     Mat imgCopy = img.Clone();
                     DrawDelaunay(ref imgCopy, ref subdiv, new MCvScalar(255, 255, 255));
                     CvInvoke.Imshow("Delaunay Triangulation", imgCopy);

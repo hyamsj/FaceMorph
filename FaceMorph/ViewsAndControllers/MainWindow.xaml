@@ -34,7 +34,7 @@
             </Menu>
         </DockPanel>
 
-        <ListView x:Name="imagePreview" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="3" SelectionChanged="ImagePreview_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible">
+        <ListView x:Name="imagePreview" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="4" Grid.RowSpan="3" SelectionChanged="ImagePreview_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible">
 
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>

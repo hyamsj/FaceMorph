@@ -15,23 +15,23 @@ namespace FaceMorph.Helpers
     public class VideoGenerator
     {
         VideoWriter videoWriter;
-        string destinationPath = @"C:\Users\joni\Desktop\testvideofourcc.mp4";
+        string destinationPath;
         System.Drawing.Size sizeOfVid;
         private ObservableCollection<ImageDetails> images;
 
-        public VideoGenerator(ImageDetails imgdet1, ImageDetails imgdet2, VectorOfPointF points1, VectorOfPointF points2)
+        public VideoGenerator(ImageDetails imgdet1, ImageDetails imgdet2, VectorOfPointF points1, VectorOfPointF points2, int fpsUser, float alphaUser, string path)
         {
-
+            this.destinationPath = path;
             sizeOfVid = GetSizeOfImages(imgdet1, imgdet2);
             float alpha = 0.0f;
             MorphImage m;
-            videoWriter = new VideoWriter(fileName: destinationPath, fps: 30, size: sizeOfVid, isColor: true);
+            videoWriter = new VideoWriter(fileName: destinationPath, fps: fpsUser, size: sizeOfVid, isColor: true);
             while (alpha < 1.0f)
             {
                 m = new MorphImage(imgdet1, imgdet2, points1, points2, alpha);
                 Image<Bgr, byte> morphedImage = m.GetMorphedImageI();
                 videoWriter.Write(morphedImage.Mat);
-                alpha += 0.01f;
+                alpha += alphaUser;
                 morphedImage.Dispose();
             }
             if (videoWriter.IsOpened)
@@ -46,9 +46,10 @@ namespace FaceMorph.Helpers
         /// Generates full video
         /// </summary>
         /// <param name="images"></param>
-        public VideoGenerator(ObservableCollection<ImageDetails> images)
+        public VideoGenerator(ObservableCollection<ImageDetails> images, int fpsUser, float alphaUser, string path)
         {
             this.images = images;
+            this.destinationPath = path;
             ImagePreprocessor ip1;
             System.Drawing.Size tmpSize = new System.Drawing.Size(0, 0);
 
@@ -88,7 +89,7 @@ namespace FaceMorph.Helpers
 
 
             //videoWriter = new VideoWriter(fileName: destinationPath, fps: 30, size: tmpSize, isColor: true);
-            videoWriter = new VideoWriter(fileName: destinationPath, compressionCode: VideoWriter.Fourcc('M', 'P', '4', 'V'), fps: 30, size: tmpSize, isColor: true);
+            videoWriter = new VideoWriter(fileName: destinationPath, compressionCode: VideoWriter.Fourcc('M', 'P', '4', 'V'), fps: fpsUser, size: tmpSize, isColor: true);
 
 
             List<Mat> frames = new List<Mat>();
@@ -105,7 +106,7 @@ namespace FaceMorph.Helpers
                     //CvInvoke.Imwrite($"testimages/img{alpha}.png", morphedImage.Mat);
                     frames.Add(morphedImage.Mat);
                     //videoWriter.Write(morphedImage.Mat);
-                    alpha += 0.02f;
+                    alpha += alphaUser;
                     //morphedImage.Dispose();
                 }
 

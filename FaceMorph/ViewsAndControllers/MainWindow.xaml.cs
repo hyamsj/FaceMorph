@@ -37,10 +37,23 @@ namespace FaceMorph
 
         public MainWindow()
         {
+
+            try
+            {
             InitializeComponent();
             if (loadDataAtStartUp)
                 LoadImageHelper();
             //EmguTester em = new EmguTester();
+
+            }
+            catch (Exception ex)
+            {
+                //Write ex.Message to a file
+                using (StreamWriter outfile = new StreamWriter(@".\error.txt"))
+                {
+                    outfile.Write(ex.Message.ToString());
+                }
+            }
         }
 
 

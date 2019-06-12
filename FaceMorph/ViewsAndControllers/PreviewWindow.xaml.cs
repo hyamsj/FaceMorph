@@ -396,11 +396,15 @@ namespace FaceMorph.ViewsAndControllers
                             if (selectedFaceCurr == _preprocessor.FacesListCurr.Count - 1)
                             {
                                 selectedFaceCurr = 0;
+                                //ffpCurr = landmarksCurr[curr.SelectedFace];
+                                //var x = _preprocessor.ffpCurr;
+                                _preprocessor.ffpCurr = _preprocessor.landmarksCurr[selectedFaceCurr];
                                 RedrawFaces((int)ImageEnum.Curr);
                             }
                             else
                             {
                                 selectedFaceCurr++;
+                                _preprocessor.ffpCurr = _preprocessor.landmarksCurr[selectedFaceCurr];
                                 RedrawFaces((int)ImageEnum.Curr);
                             }
                         }
@@ -777,7 +781,7 @@ namespace FaceMorph.ViewsAndControllers
                 default:
                     break;
             }
-            
+
         }
 
         private void CurrImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
@@ -788,14 +792,104 @@ namespace FaceMorph.ViewsAndControllers
 
         private void VideoBtn_Click(object sender, RoutedEventArgs e)
         {
-            VideoGenerator vg = new VideoGenerator(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext);
+
+            int fps = 0;
+            float alpha = 0f;
+            string incomingFps = fpsCountUI.Text;
+            string incomingAlpha = alphaValueUI.Text;
+
+            if (int.TryParse(incomingFps, out fps))
+            {
+                if (fps < 0 || fps > 60)
+                {
+                    fps = 20;
+                }
+            }
+            else
+            {
+                if (fps <= 0)
+                {
+                    fps = 20;
+                }
+            }
+
+            if (float.TryParse(incomingAlpha, out alpha))
+            {
+                if (alpha <= 0 || alpha > 1)
+                {
+                    alpha = 0.1f;
+                }
+            }
+            else
+            {
+                alpha = 0.1f;
+            }
+
+            System.Windows.Forms.SaveFileDialog sfd = new System.Windows.Forms.SaveFileDialog();
+            sfd.AddExtension = true;
+            sfd.DefaultExt = ".mp4";
+            sfd.Filter = "Media Files|*.mp4";
+            //sfd.ShowDialog();
+
+            string path;
+
+            if (sfd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                path = sfd.FileName;
+                
+                VideoGenerator vg = new VideoGenerator(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, fps, alpha, path);
+            }
+
         }
 
         private void VideoSaveFullVidBtn_Click(object sender, RoutedEventArgs e)
         {
-            //System.Windows.Forms.SaveFileDialog saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            //saveFileDialog.ShowDialog();
-            VideoGenerator vg = new VideoGenerator(Images);
+            int fps = 0;
+            float alpha = 0f;
+            string incomingFps = fpsCountUI.Text;
+            string incomingAlpha = alphaValueUI.Text;
+            //string incomingData = fpsCountUI.Text;
+
+            if (int.TryParse(incomingFps, out fps))
+            {
+                if (fps < 0 || fps > 60)
+                {
+                    fps = 20;
+                }
+            }
+            else
+            {
+                if (fps <= 0)
+                {
+                    fps = 20;
+                }
+            }
+
+            if (float.TryParse(incomingAlpha, out alpha))
+            {
+                if (alpha <= 0 || alpha > 1)
+                {
+                    alpha = 0.1f;
+                }
+            }
+            else
+            {
+                alpha = 0.1f;
+            }
+
+            System.Windows.Forms.SaveFileDialog sfd = new System.Windows.Forms.SaveFileDialog();
+            sfd.AddExtension = true;
+            sfd.DefaultExt = ".mp4";
+            sfd.Filter = "Media Files|*.mp4";
+            //sfd.ShowDialog();
+
+            string path;
+
+            if (sfd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                path = sfd.FileName;
+                VideoGenerator vg = new VideoGenerator(Images, fps, alpha, path);
+            }
         }
     }
 }
