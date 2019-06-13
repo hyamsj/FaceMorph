@@ -50,6 +50,8 @@ namespace FaceMorph.ViewsAndControllers
         Image<Bgr, byte> nextFFPImg;
         Image<Bgr, byte> currFFPImg;
 
+        List<FaceInfoHolder> faceInfoHoldersList = new List<FaceInfoHolder>();
+
 
         VectorOfVectorOfInt delaunayTri = new VectorOfVectorOfInt();
 
@@ -63,7 +65,7 @@ namespace FaceMorph.ViewsAndControllers
         public const double HAAR_MIN_FACE_FACTOR = 0.3;
         public const double HAAR_MAX_FACE_FACTOR = 0.8;
 
-
+        private bool faceInfoListInit = false;
         private bool facesDetected = false;
         private int selectedFaceCurr = 0;
         private int selectedFaceNext = 0;
@@ -72,37 +74,61 @@ namespace FaceMorph.ViewsAndControllers
         ActiveButtonEnum activeButtonEnumCurr;
         ActiveButtonEnum activeButtonEnumNext;
 
+        /// <summary>
+        /// Displays the PreviewWindow showing the current and next image, and if possible the morphed image
+        /// </summary>
+        /// <param name="imageDetails"></param>
+        /// <param name="images"></param>
         public PreviewWindow(ImageDetails imageDetails, ObservableCollection<ImageDetails> images)
         {
-            this.Images = images;
-            this.curr = imageDetails;
-
-            activeButtonEnumCurr = ActiveButtonEnum.None;
-            activeButtonEnumNext = ActiveButtonEnum.None;
-
-            DisplayImages();
-
-
-            if (next != null)
+            try
             {
-                RefreshDisplayedImages();
-            }
-            InitializeComponent();
+                this.Images = images;
+                this.curr = imageDetails;
 
-            if (displayMorphOk)
-            {
-                MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, 0.5f);
-                morphImage.Source = m.GetMorphedImage();
-                mySlider.Value = 0.5;
-            }
-            else
-            {
+                activeButtonEnumCurr = ActiveButtonEnum.None;
+                activeButtonEnumNext = ActiveButtonEnum.None;
+
+                DisplayImages();
+
+
+                if (next != null)
+                {
+                    RefreshDisplayedImages();
+                }
                 InitializeComponent();
-                var uriSource = new Uri(@"/FaceMorph;component/data/MyDefaultImage.png", UriKind.Relative);
-                morphImage.Source = new BitmapImage(uriSource);
+
+                if (displayMorphOk)
+                {
+                    MorphImage m = new MorphImage(_preprocessor.curr, _preprocessor.next, _preprocessor.ffpCurr, _preprocessor.ffpNext, 0.5f);
+                    morphImage.Source = m.GetMorphedImage();
+                    mySlider.Value = 0.5;
+                }
+                else
+                {
+                    InitializeComponent();
+                    var uriSource = new Uri(@"/FaceMorph;component/data/MyDefaultImage.png", UriKind.Relative);
+                    morphImage.Source = new BitmapImage(uriSource);
+                }
+                //InitializeFacesInfoList();
             }
+
+            catch (Exception ex)
+            {
+
+                //Write ex.Message to a file
+                using (StreamWriter outfile = new StreamWriter(@".\error.txt"))
+                {
+                    outfile.Write(ex.Message.ToString());
+                }
+            }    
+
+            
         }
 
+        /// <summary>
+        /// When an image changes, this method updates all images
+        /// </summary>
         private void RefreshDisplayedImages()
         {
             currImageI = new Image<Bgr, byte>(curr.Title);
@@ -155,6 +181,9 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        /// <summary>
+        /// Displays the images
+        /// </summary>
         public void DisplayImages()
         {
             // checks if only one image in list, i.e. nothing to morph
@@ -203,6 +232,11 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        /// <summary>
+        /// Display Face button clicked, show found ROIs
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DisplayFaceClicked(object sender, RoutedEventArgs e)
         {
             if (next == null)
@@ -222,6 +256,11 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+
+        /// <summary>
+        /// Draws the rectangles with the found faces of the current image
+        /// </summary>
+        /// <param name="facesList"></param>
         public void DrawFaceRectsCurr(List<Rectangle> facesList)
         {
             if (facesList != null)
@@ -253,6 +292,10 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        /// <summary>
+        /// Draws the rectangles with the found faces of the next image
+        /// </summary>
+        /// <param name="facesList"></param>
         public void DrawFaceRectsNext(List<Rectangle> facesList)
         {
             if (facesList != null)
@@ -270,7 +313,6 @@ namespace FaceMorph.ViewsAndControllers
                             // draw green rect
                             nextDetectedFacesImg.Draw(facesList[i], new Bgr(0, 255, 0), RECT_WIDTH);
                             selectedFaceNext = i;
-                            //CvInvoke.Imwrite("testimages/facerectimg.jpg", nextDetectedFacesImg);
                         }
                         else if (i > 0)
                         {
@@ -281,26 +323,9 @@ namespace FaceMorph.ViewsAndControllers
                     }
 
                 }
-                CvInvoke.Imwrite("testimages/detectedface.jpg", nextDetectedFacesImg);
                 nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDetectedFacesImg);
             }
         }
-
-        //public void DrawFFPCurr()
-        //{
-        //    Image<Bgr, byte> myImage = currImageMat.ToImage<Bgr, byte>();
-        //    FaceInvoke.DrawFacemarks(myImage, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
-        //    //CvInvoke.Imwrite("testffp.jpg", myImage);
-        //    currImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
-        //}
-
-        //public void DrawFFPNext()
-        //{
-        //    Image<Bgr, byte> myImage = nextImageMat.ToImage<Bgr, byte>();
-        //    FaceInvoke.DrawFacemarks(myImage, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
-        //    //CvInvoke.Imwrite("testffp.jpg", myImage);
-        //    nextImage.Source = BitmapSourceConvert.ToBitmapSource(myImage);
-        //}
 
         private void MorphButton_Click(object sender, RoutedEventArgs e)
         {
@@ -318,9 +343,13 @@ namespace FaceMorph.ViewsAndControllers
                 MessageBox.Show($"Something went wrong: {ex}");
             }
 
-            //CvInvoke.Imwrite("testimages/poster1.jpg",m.GetMorphedImageI());
         }
 
+        /// <summary>
+        /// Slider value changed, this method updates the morphed image according to the alpha value of the slider
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             double sliderValue = mySlider.Value;
@@ -330,6 +359,11 @@ namespace FaceMorph.ViewsAndControllers
             morphImage.Source = m.GetMorphedImage();
         }
 
+        /// <summary>
+        /// Changes selected face of the buttons pointing left
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChangeFaceLeftButton_Click(object sender, RoutedEventArgs e)
         {
             string buttonName = ((Button)sender).Uid;
@@ -345,11 +379,15 @@ namespace FaceMorph.ViewsAndControllers
                             if (selectedFaceCurr == 0)
                             {
                                 selectedFaceCurr = _preprocessor.FacesListCurr.Count - 1;
+                                curr.SelectedFace = selectedFaceCurr;
+                                _preprocessor.ffpCurr = _preprocessor.landmarksCurr[selectedFaceCurr];
                                 RedrawFaces((int)ImageEnum.Curr);
                             }
                             else
                             {
                                 selectedFaceCurr--;
+                                next.SelectedFace = selectedFaceNext;
+                                _preprocessor.ffpNext = _preprocessor.landmarksCurr[selectedFaceNext];
                                 RedrawFaces((int)ImageEnum.Curr);
                             }
                         }
@@ -368,6 +406,8 @@ namespace FaceMorph.ViewsAndControllers
                             else
                             {
                                 selectedFaceNext--;
+                                next.SelectedFace = selectedFaceNext;
+                                _preprocessor.ffpNext = _preprocessor.landmarksCurr[selectedFaceNext];
                                 RedrawFaces((int)ImageEnum.Next);
                             }
                         }
@@ -381,6 +421,11 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        /// <summary>
+        /// Changes current face of the buttons pointing right
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChangeFaceRightButton_Click(object sender, RoutedEventArgs e)
         {
             string buttonName = ((Button)sender).Uid;
@@ -396,15 +441,17 @@ namespace FaceMorph.ViewsAndControllers
                             if (selectedFaceCurr == _preprocessor.FacesListCurr.Count - 1)
                             {
                                 selectedFaceCurr = 0;
-                                //ffpCurr = landmarksCurr[curr.SelectedFace];
-                                //var x = _preprocessor.ffpCurr;
+                                curr.SelectedFace = selectedFaceCurr;
                                 _preprocessor.ffpCurr = _preprocessor.landmarksCurr[selectedFaceCurr];
+                                
                                 RedrawFaces((int)ImageEnum.Curr);
                             }
                             else
                             {
                                 selectedFaceCurr++;
+                                curr.SelectedFace = selectedFaceCurr;
                                 _preprocessor.ffpCurr = _preprocessor.landmarksCurr[selectedFaceCurr];
+                                var x = curr.Id;
                                 RedrawFaces((int)ImageEnum.Curr);
                             }
                         }
@@ -418,11 +465,15 @@ namespace FaceMorph.ViewsAndControllers
                             if (selectedFaceNext == _preprocessor.FacesListNext.Count - 1)
                             {
                                 selectedFaceNext = 0;
+                                next.SelectedFace = selectedFaceNext;
+                                _preprocessor.ffpNext = _preprocessor.landmarksCurr[selectedFaceNext];
                                 RedrawFaces((int)ImageEnum.Next);
                             }
                             else
                             {
                                 selectedFaceNext++;
+                                next.SelectedFace = selectedFaceNext;
+                                _preprocessor.ffpNext = _preprocessor.landmarksCurr[selectedFaceNext];
                                 RedrawFaces((int)ImageEnum.Next);
                             }
                         }
@@ -462,7 +513,6 @@ namespace FaceMorph.ViewsAndControllers
                 Mat tmp = new Mat();
                 nextImageI.Mat.CopyTo(tmp);
                 tmpImageI = tmp.ToImage<Bgr, byte>();
-                //CvInvoke.Imwrite("testimages/redraw.jpg", currImageI);
             }
 
 
@@ -513,6 +563,11 @@ namespace FaceMorph.ViewsAndControllers
             facesCountNext.Content = $"{facesNext}";
         }
 
+        /// <summary>
+        /// Displays delaunay triangulation
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DelaunayCheckBox_Clicked(object sender, RoutedEventArgs e)
         {
             Mat tmp = new Mat();
@@ -536,8 +591,6 @@ namespace FaceMorph.ViewsAndControllers
                         }
                         currImage.Source = BitmapSourceConvert.ToBitmapSource(currDelaunayImg);
                         activeButtonEnumCurr = ActiveButtonEnum.Delaunay;
-                        //CvInvoke.Imwrite("testimages/delaunay_curr.jpg", currDelaunayImg);
-
                     }
 
 
@@ -558,7 +611,6 @@ namespace FaceMorph.ViewsAndControllers
                             }
                         }
                         nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextDelaunayImg);
-                        //CvInvoke.Imwrite("testimages/delaunay_next.jpg", nextDelaunayImg);
                         activeButtonEnumNext = ActiveButtonEnum.Delaunay;
 
                     }
@@ -569,7 +621,11 @@ namespace FaceMorph.ViewsAndControllers
             }
 
         }
-
+        /// <summary>
+        /// Displays facial feature points
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FFPCheckbox_Clicked(object sender, RoutedEventArgs e)
         {
             Mat tmp = new Mat();
@@ -583,7 +639,6 @@ namespace FaceMorph.ViewsAndControllers
                         this.currFFPImg = tmp.ToImage<Bgr, byte>();
 
                         FaceInvoke.DrawFacemarks(currFFPImg, _preprocessor.ffpCurr, new MCvScalar(255, 0, 0));
-                        //CvInvoke.Imwrite("testffp.jpg", currFFPImg);
                         currImage.Source = BitmapSourceConvert.ToBitmapSource(currFFPImg);
                         activeButtonEnumCurr = ActiveButtonEnum.FFP;
 
@@ -596,7 +651,6 @@ namespace FaceMorph.ViewsAndControllers
                         this.nextFFPImg = tmp.ToImage<Bgr, byte>();
                         FaceInvoke.DrawFacemarks(nextFFPImg, _preprocessor.ffpNext, new MCvScalar(255, 0, 0));
                         nextImage.Source = BitmapSourceConvert.ToBitmapSource(nextFFPImg);
-                        //CvInvoke.Imwrite("testimages/ffp.jpg", nextFFPImg);
                         activeButtonEnumNext = ActiveButtonEnum.FFP;
                     }
                     break;
@@ -608,6 +662,11 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        /// <summary>
+        /// shows images unaltered
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void NoneRB_Clicked(object sender, RoutedEventArgs e)
         {
 
@@ -630,7 +689,11 @@ namespace FaceMorph.ViewsAndControllers
 
 
         }
-
+        /// <summary>
+        /// Changes active pictures
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChangeActivePicturesButton_Clicked(object sender, RoutedEventArgs e)
         {
             string buttonName = ((Button)sender).Uid;
@@ -683,7 +746,6 @@ namespace FaceMorph.ViewsAndControllers
                         nextImage.Source = BitmapSourceConvert.ToBitmapSource(new Image<Bgr, byte>(next.Title));
 
                         RefreshDisplayedImages();
-                        //CvInvoke.Imwrite("testimages/test04.jpg", new Image<Bgr, byte>(y.Title));
                         //DisplayImages();
                         if (displayMorphOk)
                         {
@@ -713,6 +775,9 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        /// <summary>
+        /// Makes sure that settings are kept when switching images
+        /// </summary>
         private void DisplayImagesCorrectCB()
         {
             Mat tmp = new Mat();
@@ -790,6 +855,11 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        /// <summary>
+        /// Generates short Video of current 2 images
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void VideoBtn_Click(object sender, RoutedEventArgs e)
         {
 
@@ -842,6 +912,11 @@ namespace FaceMorph.ViewsAndControllers
 
         }
 
+        /// <summary>
+        /// Generates video of all images in the images list
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void VideoSaveFullVidBtn_Click(object sender, RoutedEventArgs e)
         {
             int fps = 0;

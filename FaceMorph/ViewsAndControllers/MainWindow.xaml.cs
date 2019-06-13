@@ -20,7 +20,8 @@ using System.Windows.Media.Imaging;
 namespace FaceMorph
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainWindow.xaml, the page where the User can add and remove images from the project and 
+    /// align them
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -197,7 +198,9 @@ namespace FaceMorph
             imagePreview.ItemsSource = imagesBindingSource;
             imagePreview.Items.Refresh(); // todo: add to listener
         }
-
+        /// <summary>
+        /// Loads images from existing project
+        /// </summary>
         public void LoadImageHelper()
         {
 
@@ -217,6 +220,11 @@ namespace FaceMorph
             }
         }
 
+        /// <summary>
+        /// Removes image from list after using button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
 
@@ -226,7 +234,7 @@ namespace FaceMorph
                 selectedItem.ToDelete = true;
             }
 
-            // todo: delete this?
+            
             foreach (var x in Images.ToList())
             {
                 if (x.ToDelete)
@@ -236,15 +244,20 @@ namespace FaceMorph
 
                 }
             }
-            CleanUpIndex(); // todo: add to listener
+            CleanUpIndex(); 
         }
 
+        /// <summary>
+        /// Removes image from list after using context menu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CmRemove_Click(object sender, RoutedEventArgs e)
         {
             ImageDetails img = GetCurrentImage();
             Images.Remove(img);
             imagePreview.Items.Refresh();
-            CleanUpIndex(); // todo: add to listener
+            CleanUpIndex(); 
         }
 
         private void LeftButton_Click(object sender, RoutedEventArgs e)
@@ -262,6 +275,11 @@ namespace FaceMorph
             }
         }
 
+        /// <summary>
+        /// Moves current image to the right
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RightButton_Click(object sender, RoutedEventArgs e)
         {
             bool? rbMove = RBMove.IsChecked;
@@ -271,15 +289,11 @@ namespace FaceMorph
                 int nextImage = currentImage + 1;
 
                 Images = ObservableCollectionExtension.Swap(Images, currentImage, nextImage);
-                CleanUpIndex(); // todo: add listener
-                imagePreview.Items.Refresh(); // todo: add to listener
+                CleanUpIndex(); 
+                imagePreview.Items.Refresh(); 
                 _currentImage++;
             }
 
-
-
-
-            Console.WriteLine("Right button clicked");
         }
 
         private void RadioButtonMove_Click(object sender, RoutedEventArgs e)
@@ -293,6 +307,11 @@ namespace FaceMorph
 
         }
 
+        /// <summary>
+        /// Saves project
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SaveProject_Click(object sender, RoutedEventArgs e)
         {
             List<TmpImageDetails> tmpList = new List<TmpImageDetails>();
@@ -310,6 +329,11 @@ namespace FaceMorph
 
         }
 
+        /// <summary>
+        /// Loads project
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LoadProject_Click(object sender, RoutedEventArgs e)
         {
             LoadImageHelper();
@@ -317,6 +341,10 @@ namespace FaceMorph
         
 
 
+        /// <summary>
+        /// Returns current image
+        /// </summary>
+        /// <returns></returns>
         public ImageDetails GetCurrentImage()
         {
             foreach (ImageDetails im in Images)
@@ -337,6 +365,9 @@ namespace FaceMorph
             return curr;
         }
 
+        /// <summary>
+        /// Cleans up undex that keeps track of the images in list
+        /// </summary>
         public void CleanUpIndex()
         {
             for (int i = 0; i < Images.Count; i++)
@@ -356,11 +387,13 @@ namespace FaceMorph
             return Images;
         }
 
+        /// <summary>
+        /// keeps track of selected item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ImagePreview_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //ListViewItem lbi = ((sender as ListView).SelectedItem as ListViewItem);
-            //string m = "   You selected " + lbi.Content.ToString() + ".";
-            //Console.WriteLine($"Sender: {sender}, Args: {e}");
 
             var selectedItems = imagePreview.SelectedItems;
             foreach (ImageDetails selectedItem in selectedItems)
@@ -368,7 +401,7 @@ namespace FaceMorph
                 Console.WriteLine(selectedItem.Id);
             }
 
-            //TODO: change deleting and rearranging images to work with this
+            
         }
 
 

@@ -28,8 +28,6 @@
                     <MenuItem Header="_Add Folder" Click="FileAddFolder_Click" />
                     <MenuItem Header="_Add Image" Click="FileAddImage_Click" />
                     <MenuItem Header="_Save" Click="SaveProject_Click"/>
-                    <Separator />
-                    <MenuItem Header="_Exit" />
                 </MenuItem>
             </Menu>
         </DockPanel>

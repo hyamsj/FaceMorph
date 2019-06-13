@@ -25,20 +25,31 @@ namespace FaceMorph.Helpers
             sizeOfVid = GetSizeOfImages(imgdet1, imgdet2);
             float alpha = 0.0f;
             MorphImage m;
-            videoWriter = new VideoWriter(fileName: destinationPath, fps: fpsUser, size: sizeOfVid, isColor: true);
-            while (alpha < 1.0f)
+
+            try
             {
-                m = new MorphImage(imgdet1, imgdet2, points1, points2, alpha);
-                Image<Bgr, byte> morphedImage = m.GetMorphedImageI();
-                videoWriter.Write(morphedImage.Mat);
-                alpha += alphaUser;
-                morphedImage.Dispose();
+                videoWriter = new VideoWriter(fileName: destinationPath, fps: fpsUser, size: sizeOfVid, isColor: true);
+                while (alpha < 1.0f)
+                {
+                    m = new MorphImage(imgdet1, imgdet2, points1, points2, alpha);
+                    Image<Bgr, byte> morphedImage = m.GetMorphedImageI();
+                    videoWriter.Write(morphedImage.Mat);
+                    alpha += alphaUser;
+                    morphedImage.Dispose();
+                }
+                if (videoWriter.IsOpened)
+                {
+                    videoWriter.Dispose();
+                }
+                MessageBox.Show($"Completed");
             }
-            if (videoWriter.IsOpened)
+            catch (Exception)
             {
-                videoWriter.Dispose();
+
+                MessageBox.Show("The program has run out of memory. Try to use fewer images, a larger alpha value (0.05 - 0.1) or a lower FPS count (25)");
             }
-            MessageBox.Show($"Completed");
+
+            
         }
 
 
@@ -87,45 +98,54 @@ namespace FaceMorph.Helpers
             MorphImage m;
             ImagePreprocessor ip;
 
-
-            //videoWriter = new VideoWriter(fileName: destinationPath, fps: 30, size: tmpSize, isColor: true);
-            videoWriter = new VideoWriter(fileName: destinationPath, compressionCode: VideoWriter.Fourcc('M', 'P', '4', 'V'), fps: fpsUser, size: tmpSize, isColor: true);
-
-
-            List<Mat> frames = new List<Mat>();
-
-            for (int i = 0; i < images.Count - 1; i++)
+            try
             {
-                ip = new ImagePreprocessor(images.ElementAt(i), images.ElementAt(i + 1), tmpSize);
+                //videoWriter = new VideoWriter(fileName: destinationPath, fps: 30, size: tmpSize, isColor: true);
+                videoWriter = new VideoWriter(fileName: destinationPath, compressionCode: VideoWriter.Fourcc('M', 'P', '4', 'V'), fps: fpsUser, size: tmpSize, isColor: true);
 
-                float alpha = 0.0f;
-                while (alpha < 1.0f)
+
+                List<Mat> frames = new List<Mat>();
+
+                for (int i = 0; i < images.Count - 1; i++)
                 {
-                    m = new MorphImage(ip.curr, ip.next, ip.ffpCurr, ip.ffpNext, alpha);
-                    Image<Bgr, byte> morphedImage = m.GetMorphedImageI();
-                    //CvInvoke.Imwrite($"testimages/img{alpha}.png", morphedImage.Mat);
-                    frames.Add(morphedImage.Mat);
-                    //videoWriter.Write(morphedImage.Mat);
-                    alpha += alphaUser;
-                    //morphedImage.Dispose();
+                    ip = new ImagePreprocessor(images.ElementAt(i), images.ElementAt(i + 1), tmpSize);
+
+                    float alpha = 0.0f;
+                    while (alpha < 1.0f)
+                    {
+                        m = new MorphImage(ip.curr, ip.next, ip.ffpCurr, ip.ffpNext, alpha);
+                        Image<Bgr, byte> morphedImage = m.GetMorphedImageI();
+
+                        frames.Add(morphedImage.Mat);
+                        //videoWriter.Write(morphedImage.Mat);
+                        alpha += alphaUser;
+                        //morphedImage.Dispose();
+                    }
+
+
+
+
                 }
+                int img1 = 0;
+                foreach (Mat mat in frames)
+                {
 
-
-
-
+                    img1 += 1;
+                    videoWriter.Write(mat);
+                }
+                if (videoWriter.IsOpened)
+                {
+                    videoWriter.Dispose();
+                }
+                MessageBox.Show($"Completed");
             }
-            int img1 = 0;
-            foreach (Mat mat in frames)
+            catch (Exception)
             {
-                //CvInvoke.Imwrite($"testimages/img{img1}.png", mat);
-                img1 += 1;
-                videoWriter.Write(mat);
+                MessageBox.Show("The program has run out of memory. Try to use fewer images, a larger alpha value (0.05 - 0.1) or a lower FPS count (25)");
+                
             }
-            if (videoWriter.IsOpened)
-            {
-                videoWriter.Dispose();
-            }
-            MessageBox.Show($"Completed");
+
+            
         }
 
         private System.Drawing.Size GetSizeOfImages(ImageDetails img1, ImageDetails img2)

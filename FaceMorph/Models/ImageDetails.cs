@@ -13,6 +13,9 @@ using System.Windows.Media.Imaging;
 
 namespace FaceMorph
 {
+    /// <summary>
+    /// Class that holds information about each image about to be either morphed or ignored (if no face found)
+    /// </summary>
     public class ImageDetails : INotifyPropertyChanged
     {
 

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace FaceMorph.Morph
 {
     /// <summary>
-    /// detects face ffp, 
+    /// detects face and ffps before displaying images in the preview window
     /// </summary>
     public class ImagePreprocessor
     {
@@ -240,7 +240,7 @@ namespace FaceMorph.Morph
             try
             {
                 // get face detect dataset
-                facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
+                facePath = Path.GetFullPath(@"data/haarcascade_frontalface_default.xml");
             }
             catch (Exception ex)
             {
@@ -309,13 +309,14 @@ namespace FaceMorph.Morph
             string facePath;
             try
             {
+                
                 // get face detect dataset
-                facePath = Path.GetFullPath(@"../../data/haarcascade_frontalface_default.xml");
+                facePath = Path.GetFileName(@"data/haarcascade_frontalface_default.xml");
 
                 // get FFP dataset
                 facemarkParam = new FacemarkLBFParams();
                 facemark = new FacemarkLBF(facemarkParam);
-                facemark.LoadModel(@"../../data/lbfmodel.yaml");
+                facemark.LoadModel(@"data/lbfmodel.yaml");
             }
 
             catch (Exception ex)
